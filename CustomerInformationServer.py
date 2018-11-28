@@ -22,40 +22,39 @@
 import glob
 import sys
 sys.path.append('gen-py')
-#sys.path.insert(0, glob.glob('../../lib/py/build/lib*')[0])
 
 from thrift import Thrift
-from bank import AuthenticateService
-from hashlib import *
+from bank import CustomerInformation
+
+from datetime import datetime
 
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
-user_db = {'ricklin' : '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8',
-           'user'    : 'c73ba2982c55b7ead0e4098a92f722bdb3a3b3d8'
-          }
+contact_info_db = { 'ricklin' : { 'number' : '6666666666', 'address' : '123 Broadway N'}}
+customer_product_db = { 'ricklin' : ['checking', 'savings', 'platinum card']}
 
-class AuthenticateHandler:
+class CustomerInformationHandler:
     def __init__(self):
         self.log = {}
 
     def ping(self):
         print('ping()')
 
-    def authenticate(self, user, password):
-        digest = sha1(password).hexdigest() 
-        print(password)
-        print(digest)
-        print(user_db[user])
-        
-        return user_db[user] == digest
+    def getContactInformation(self, customerId):
+      info = contact_info_db[customerId]
+      return info
+
+    def getRegisteredProducts(self, customerId):
+      products = customer_product_db[customerId]
+      return products
 
 if __name__ == '__main__':
-    handler = AuthenticateHandler()
-    processor = AuthenticateService.Processor(handler)
-    transport = TSocket.TServerSocket(host='localhost', port=19092)
+    handler = CustomerInformationHandler()
+    processor = CustomerInformation.Processor(handler)
+    transport = TSocket.TServerSocket(host='localhost', port=19094)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
@@ -69,4 +68,4 @@ if __name__ == '__main__':
 
     print('Starting the server...')
     server.serve()
-    print('Auth done.')
+    print('Customer Information done.')

@@ -22,40 +22,55 @@
 import glob
 import sys
 sys.path.append('gen-py')
-#sys.path.insert(0, glob.glob('../../lib/py/build/lib*')[0])
 
 from thrift import Thrift
-from bank import AuthenticateService
-from hashlib import *
+from bank import CardManagement
+
+from datetime import datetime
 
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
-user_db = {'ricklin' : '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8',
-           'user'    : 'c73ba2982c55b7ead0e4098a92f722bdb3a3b3d8'
-          }
+card_db = ['1234123412341234']
+auth_rule_db = {'1234123412341234' : 300}
+tranx_db = {'1234123412341234' : []}
 
-class AuthenticateHandler:
+class CardManagementHandler:
     def __init__(self):
         self.log = {}
 
     def ping(self):
         print('ping()')
 
-    def authenticate(self, user, password):
-        digest = sha1(password).hexdigest() 
-        print(password)
-        print(digest)
-        print(user_db[user])
-        
-        return user_db[user] == digest
+    def authorizePayment(self, cardNumber, amount):
+      auth = False
+      limit = auth_rule_db[cardNumber]
+      resp = str(amount) + ' exceeds the transaction limit ' + str(limit)
+
+      if amount <= limit:
+        timestamp = str(datetime.now())
+        tranx_db[cardNumber].append(str(amount) + ', ' + timestamp)
+        auth = True
+        resp = str(amount) + ' posted to ' + cardNumber[-4:] + \
+               ' at ' + timestamp
+
+      return resp
+
+    def getTransactionHistory(self, cardNumber):
+      history = tranx_db[cardNumber]
+      return history
+      #for entry in history:
+      #  print(entry)
+    
+    def getCardNumber(self):
+      return card_db[0]
 
 if __name__ == '__main__':
-    handler = AuthenticateHandler()
-    processor = AuthenticateService.Processor(handler)
-    transport = TSocket.TServerSocket(host='localhost', port=19092)
+    handler = CardManagementHandler()
+    processor = CardManagement.Processor(handler)
+    transport = TSocket.TServerSocket(host='localhost', port=19093)
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
@@ -69,4 +84,4 @@ if __name__ == '__main__':
 
     print('Starting the server...')
     server.serve()
-    print('Auth done.')
+    print('Card Management done.')
