@@ -1,1 +1,1 @@
-__all__ = ['ttypes', 'constants', 'HelloworldService', 'AuthenticateService', 'CardManagement', 'CustomerInformation', 'OnlineBanking', 'PaymentAuthorization', 'TransactionHistory']
+__all__ = ['ttypes', 'constants', 'HelloworldService', 'AuthenticateService', 'CardManagement', 'TransactionHistory', 'TransactionHistoryDB', 'PaymentAuthorization', 'PaymentAuthorizationDB', 'CustomerInformation', 'ContactInformation', 'ContactInformationDB', 'RegisteredProducts', 'RegisteredProductsDB', 'OnlineBanking']

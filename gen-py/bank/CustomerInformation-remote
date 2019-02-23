@@ -25,7 +25,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('')
     print('Functions:')
     print('   getContactInformation(string customerId)')
+    print('   retrieveContactInformation(string customerId)')
+    print('  bool updateContactInformation(string customerId,  revisedInfo)')
+    print('  bool verifyContactInformation(string customerId, string field, string answer)')
     print('   getRegisteredProducts(string customerId)')
+    print('   getAccountNumbers(string customerId)')
+    print('   getCardNumbers(string customerId)')
     print('')
     sys.exit(0)
 
@@ -111,11 +116,41 @@ if cmd == 'getContactInformation':
         sys.exit(1)
     pp.pprint(client.getContactInformation(args[0],))
 
+elif cmd == 'retrieveContactInformation':
+    if len(args) != 1:
+        print('retrieveContactInformation requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.retrieveContactInformation(args[0],))
+
+elif cmd == 'updateContactInformation':
+    if len(args) != 2:
+        print('updateContactInformation requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.updateContactInformation(args[0], eval(args[1]),))
+
+elif cmd == 'verifyContactInformation':
+    if len(args) != 3:
+        print('verifyContactInformation requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.verifyContactInformation(args[0], args[1], args[2],))
+
 elif cmd == 'getRegisteredProducts':
     if len(args) != 1:
         print('getRegisteredProducts requires 1 args')
         sys.exit(1)
     pp.pprint(client.getRegisteredProducts(args[0],))
+
+elif cmd == 'getAccountNumbers':
+    if len(args) != 1:
+        print('getAccountNumbers requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.getAccountNumbers(args[0],))
+
+elif cmd == 'getCardNumbers':
+    if len(args) != 1:
+        print('getCardNumbers requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.getCardNumbers(args[0],))
 
 else:
     print('Unrecognized method %s' % cmd)

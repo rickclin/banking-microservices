@@ -16,19 +16,26 @@ from thrift.transport import TTransport
 
 
 class Iface(object):
-    def authorize(self, cardNumber, amount):
+    def getLimit(self, cardNumber):
         """
         Parameters:
          - cardNumber
-         - amount
         """
         pass
 
-    def changeAuthRule(self, cardNumber, newAmount):
+    def changeLimit(self, cardNumber, newAmount):
         """
         Parameters:
          - cardNumber
          - newAmount
+        """
+        pass
+
+    def addLimit(self, cardNumber, amount):
+        """
+        Parameters:
+         - cardNumber
+         - amount
         """
         pass
 
@@ -40,25 +47,23 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def authorize(self, cardNumber, amount):
+    def getLimit(self, cardNumber):
         """
         Parameters:
          - cardNumber
-         - amount
         """
-        self.send_authorize(cardNumber, amount)
-        return self.recv_authorize()
+        self.send_getLimit(cardNumber)
+        return self.recv_getLimit()
 
-    def send_authorize(self, cardNumber, amount):
-        self._oprot.writeMessageBegin('authorize', TMessageType.CALL, self._seqid)
-        args = authorize_args()
+    def send_getLimit(self, cardNumber):
+        self._oprot.writeMessageBegin('getLimit', TMessageType.CALL, self._seqid)
+        args = getLimit_args()
         args.cardNumber = cardNumber
-        args.amount = amount
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_authorize(self):
+    def recv_getLimit(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -66,32 +71,32 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = authorize_result()
+        result = getLimit_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "authorize failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "getLimit failed: unknown result")
 
-    def changeAuthRule(self, cardNumber, newAmount):
+    def changeLimit(self, cardNumber, newAmount):
         """
         Parameters:
          - cardNumber
          - newAmount
         """
-        self.send_changeAuthRule(cardNumber, newAmount)
-        return self.recv_changeAuthRule()
+        self.send_changeLimit(cardNumber, newAmount)
+        return self.recv_changeLimit()
 
-    def send_changeAuthRule(self, cardNumber, newAmount):
-        self._oprot.writeMessageBegin('changeAuthRule', TMessageType.CALL, self._seqid)
-        args = changeAuthRule_args()
+    def send_changeLimit(self, cardNumber, newAmount):
+        self._oprot.writeMessageBegin('changeLimit', TMessageType.CALL, self._seqid)
+        args = changeLimit_args()
         args.cardNumber = cardNumber
         args.newAmount = newAmount
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_changeAuthRule(self):
+    def recv_changeLimit(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -99,20 +104,54 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = changeAuthRule_result()
+        result = changeLimit_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "changeAuthRule failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "changeLimit failed: unknown result")
+
+    def addLimit(self, cardNumber, amount):
+        """
+        Parameters:
+         - cardNumber
+         - amount
+        """
+        self.send_addLimit(cardNumber, amount)
+        return self.recv_addLimit()
+
+    def send_addLimit(self, cardNumber, amount):
+        self._oprot.writeMessageBegin('addLimit', TMessageType.CALL, self._seqid)
+        args = addLimit_args()
+        args.cardNumber = cardNumber
+        args.amount = amount
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_addLimit(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = addLimit_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "addLimit failed: unknown result")
 
 
 class Processor(Iface, TProcessor):
     def __init__(self, handler):
         self._handler = handler
         self._processMap = {}
-        self._processMap["authorize"] = Processor.process_authorize
-        self._processMap["changeAuthRule"] = Processor.process_changeAuthRule
+        self._processMap["getLimit"] = Processor.process_getLimit
+        self._processMap["changeLimit"] = Processor.process_changeLimit
+        self._processMap["addLimit"] = Processor.process_addLimit
 
     def process(self, iprot, oprot):
         (name, type, seqid) = iprot.readMessageBegin()
@@ -129,13 +168,13 @@ class Processor(Iface, TProcessor):
             self._processMap[name](self, seqid, iprot, oprot)
         return True
 
-    def process_authorize(self, seqid, iprot, oprot):
-        args = authorize_args()
+    def process_getLimit(self, seqid, iprot, oprot):
+        args = getLimit_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = authorize_result()
+        result = getLimit_result()
         try:
-            result.success = self._handler.authorize(args.cardNumber, args.amount)
+            result.success = self._handler.getLimit(args.cardNumber)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -143,18 +182,18 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("authorize", msg_type, seqid)
+        oprot.writeMessageBegin("getLimit", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_changeAuthRule(self, seqid, iprot, oprot):
-        args = changeAuthRule_args()
+    def process_changeLimit(self, seqid, iprot, oprot):
+        args = changeLimit_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = changeAuthRule_result()
+        result = changeLimit_result()
         try:
-            result.success = self._handler.changeAuthRule(args.cardNumber, args.newAmount)
+            result.success = self._handler.changeLimit(args.cardNumber, args.newAmount)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -162,7 +201,26 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("changeAuthRule", msg_type, seqid)
+        oprot.writeMessageBegin("changeLimit", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_addLimit(self, seqid, iprot, oprot):
+        args = addLimit_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = addLimit_result()
+        try:
+            result.success = self._handler.addLimit(args.cardNumber, args.amount)
+            msg_type = TMessageType.REPLY
+        except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+            raise
+        except Exception as ex:
+            msg_type = TMessageType.EXCEPTION
+            logging.exception(ex)
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("addLimit", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -170,22 +228,19 @@ class Processor(Iface, TProcessor):
 # HELPER FUNCTIONS AND STRUCTURES
 
 
-class authorize_args(object):
+class getLimit_args(object):
     """
     Attributes:
      - cardNumber
-     - amount
     """
 
     thrift_spec = (
         None,  # 0
         (1, TType.STRING, 'cardNumber', 'UTF8', None, ),  # 1
-        (2, TType.DOUBLE, 'amount', None, None, ),  # 2
     )
 
-    def __init__(self, cardNumber=None, amount=None,):
+    def __init__(self, cardNumber=None,):
         self.cardNumber = cardNumber
-        self.amount = amount
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -201,11 +256,6 @@ class authorize_args(object):
                     self.cardNumber = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.DOUBLE:
-                    self.amount = iprot.readDouble()
-                else:
-                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -215,14 +265,10 @@ class authorize_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('authorize_args')
+        oprot.writeStructBegin('getLimit_args')
         if self.cardNumber is not None:
             oprot.writeFieldBegin('cardNumber', TType.STRING, 1)
             oprot.writeString(self.cardNumber.encode('utf-8') if sys.version_info[0] == 2 else self.cardNumber)
-            oprot.writeFieldEnd()
-        if self.amount is not None:
-            oprot.writeFieldBegin('amount', TType.DOUBLE, 2)
-            oprot.writeDouble(self.amount)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -242,14 +288,14 @@ class authorize_args(object):
         return not (self == other)
 
 
-class authorize_result(object):
+class getLimit_result(object):
     """
     Attributes:
      - success
     """
 
     thrift_spec = (
-        (0, TType.BOOL, 'success', None, None, ),  # 0
+        (0, TType.DOUBLE, 'success', None, None, ),  # 0
     )
 
     def __init__(self, success=None,):
@@ -265,8 +311,8 @@ class authorize_result(object):
             if ftype == TType.STOP:
                 break
             if fid == 0:
-                if ftype == TType.BOOL:
-                    self.success = iprot.readBool()
+                if ftype == TType.DOUBLE:
+                    self.success = iprot.readDouble()
                 else:
                     iprot.skip(ftype)
             else:
@@ -278,10 +324,10 @@ class authorize_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('authorize_result')
+        oprot.writeStructBegin('getLimit_result')
         if self.success is not None:
-            oprot.writeFieldBegin('success', TType.BOOL, 0)
-            oprot.writeBool(self.success)
+            oprot.writeFieldBegin('success', TType.DOUBLE, 0)
+            oprot.writeDouble(self.success)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -301,7 +347,7 @@ class authorize_result(object):
         return not (self == other)
 
 
-class changeAuthRule_args(object):
+class changeLimit_args(object):
     """
     Attributes:
      - cardNumber
@@ -346,7 +392,7 @@ class changeAuthRule_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('changeAuthRule_args')
+        oprot.writeStructBegin('changeLimit_args')
         if self.cardNumber is not None:
             oprot.writeFieldBegin('cardNumber', TType.STRING, 1)
             oprot.writeString(self.cardNumber.encode('utf-8') if sys.version_info[0] == 2 else self.cardNumber)
@@ -373,7 +419,7 @@ class changeAuthRule_args(object):
         return not (self == other)
 
 
-class changeAuthRule_result(object):
+class changeLimit_result(object):
     """
     Attributes:
      - success
@@ -409,7 +455,138 @@ class changeAuthRule_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('changeAuthRule_result')
+        oprot.writeStructBegin('changeLimit_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.BOOL, 0)
+            oprot.writeBool(self.success)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class addLimit_args(object):
+    """
+    Attributes:
+     - cardNumber
+     - amount
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, 'cardNumber', 'UTF8', None, ),  # 1
+        (2, TType.DOUBLE, 'amount', None, None, ),  # 2
+    )
+
+    def __init__(self, cardNumber=None, amount=None,):
+        self.cardNumber = cardNumber
+        self.amount = amount
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.cardNumber = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.DOUBLE:
+                    self.amount = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('addLimit_args')
+        if self.cardNumber is not None:
+            oprot.writeFieldBegin('cardNumber', TType.STRING, 1)
+            oprot.writeString(self.cardNumber.encode('utf-8') if sys.version_info[0] == 2 else self.cardNumber)
+            oprot.writeFieldEnd()
+        if self.amount is not None:
+            oprot.writeFieldBegin('amount', TType.DOUBLE, 2)
+            oprot.writeDouble(self.amount)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class addLimit_result(object):
+    """
+    Attributes:
+     - success
+    """
+
+    thrift_spec = (
+        (0, TType.BOOL, 'success', None, None, ),  # 0
+    )
+
+    def __init__(self, success=None,):
+        self.success = success
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.BOOL:
+                    self.success = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('addLimit_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.BOOL, 0)
             oprot.writeBool(self.success)

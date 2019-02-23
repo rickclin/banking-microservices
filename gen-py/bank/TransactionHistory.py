@@ -16,10 +16,32 @@ from thrift.transport import TTransport
 
 
 class Iface(object):
-    def getTransactionHistory(self, cardNumber):
+    def getTransactionLog(self, cardNumber):
         """
         Parameters:
          - cardNumber
+        """
+        pass
+
+    def filterTransactions(self, cardNumber, numOfResults, dateRange, amountRange, entryMode, description):
+        """
+        Parameters:
+         - cardNumber
+         - numOfResults
+         - dateRange
+         - amountRange
+         - entryMode
+         - description
+        """
+        pass
+
+    def insertTransaction(self, cardNumber, amount, entryMode, description):
+        """
+        Parameters:
+         - cardNumber
+         - amount
+         - entryMode
+         - description
         """
         pass
 
@@ -31,23 +53,23 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def getTransactionHistory(self, cardNumber):
+    def getTransactionLog(self, cardNumber):
         """
         Parameters:
          - cardNumber
         """
-        self.send_getTransactionHistory(cardNumber)
-        return self.recv_getTransactionHistory()
+        self.send_getTransactionLog(cardNumber)
+        return self.recv_getTransactionLog()
 
-    def send_getTransactionHistory(self, cardNumber):
-        self._oprot.writeMessageBegin('getTransactionHistory', TMessageType.CALL, self._seqid)
-        args = getTransactionHistory_args()
+    def send_getTransactionLog(self, cardNumber):
+        self._oprot.writeMessageBegin('getTransactionLog', TMessageType.CALL, self._seqid)
+        args = getTransactionLog_args()
         args.cardNumber = cardNumber
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_getTransactionHistory(self):
+    def recv_getTransactionLog(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -55,19 +77,99 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = getTransactionHistory_result()
+        result = getTransactionLog_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "getTransactionHistory failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "getTransactionLog failed: unknown result")
+
+    def filterTransactions(self, cardNumber, numOfResults, dateRange, amountRange, entryMode, description):
+        """
+        Parameters:
+         - cardNumber
+         - numOfResults
+         - dateRange
+         - amountRange
+         - entryMode
+         - description
+        """
+        self.send_filterTransactions(cardNumber, numOfResults, dateRange, amountRange, entryMode, description)
+        return self.recv_filterTransactions()
+
+    def send_filterTransactions(self, cardNumber, numOfResults, dateRange, amountRange, entryMode, description):
+        self._oprot.writeMessageBegin('filterTransactions', TMessageType.CALL, self._seqid)
+        args = filterTransactions_args()
+        args.cardNumber = cardNumber
+        args.numOfResults = numOfResults
+        args.dateRange = dateRange
+        args.amountRange = amountRange
+        args.entryMode = entryMode
+        args.description = description
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_filterTransactions(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = filterTransactions_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "filterTransactions failed: unknown result")
+
+    def insertTransaction(self, cardNumber, amount, entryMode, description):
+        """
+        Parameters:
+         - cardNumber
+         - amount
+         - entryMode
+         - description
+        """
+        self.send_insertTransaction(cardNumber, amount, entryMode, description)
+        return self.recv_insertTransaction()
+
+    def send_insertTransaction(self, cardNumber, amount, entryMode, description):
+        self._oprot.writeMessageBegin('insertTransaction', TMessageType.CALL, self._seqid)
+        args = insertTransaction_args()
+        args.cardNumber = cardNumber
+        args.amount = amount
+        args.entryMode = entryMode
+        args.description = description
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_insertTransaction(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = insertTransaction_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "insertTransaction failed: unknown result")
 
 
 class Processor(Iface, TProcessor):
     def __init__(self, handler):
         self._handler = handler
         self._processMap = {}
-        self._processMap["getTransactionHistory"] = Processor.process_getTransactionHistory
+        self._processMap["getTransactionLog"] = Processor.process_getTransactionLog
+        self._processMap["filterTransactions"] = Processor.process_filterTransactions
+        self._processMap["insertTransaction"] = Processor.process_insertTransaction
 
     def process(self, iprot, oprot):
         (name, type, seqid) = iprot.readMessageBegin()
@@ -84,13 +186,13 @@ class Processor(Iface, TProcessor):
             self._processMap[name](self, seqid, iprot, oprot)
         return True
 
-    def process_getTransactionHistory(self, seqid, iprot, oprot):
-        args = getTransactionHistory_args()
+    def process_getTransactionLog(self, seqid, iprot, oprot):
+        args = getTransactionLog_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = getTransactionHistory_result()
+        result = getTransactionLog_result()
         try:
-            result.success = self._handler.getTransactionHistory(args.cardNumber)
+            result.success = self._handler.getTransactionLog(args.cardNumber)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -98,7 +200,45 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("getTransactionHistory", msg_type, seqid)
+        oprot.writeMessageBegin("getTransactionLog", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_filterTransactions(self, seqid, iprot, oprot):
+        args = filterTransactions_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = filterTransactions_result()
+        try:
+            result.success = self._handler.filterTransactions(args.cardNumber, args.numOfResults, args.dateRange, args.amountRange, args.entryMode, args.description)
+            msg_type = TMessageType.REPLY
+        except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+            raise
+        except Exception as ex:
+            msg_type = TMessageType.EXCEPTION
+            logging.exception(ex)
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("filterTransactions", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_insertTransaction(self, seqid, iprot, oprot):
+        args = insertTransaction_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = insertTransaction_result()
+        try:
+            result.success = self._handler.insertTransaction(args.cardNumber, args.amount, args.entryMode, args.description)
+            msg_type = TMessageType.REPLY
+        except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+            raise
+        except Exception as ex:
+            msg_type = TMessageType.EXCEPTION
+            logging.exception(ex)
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("insertTransaction", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -106,7 +246,7 @@ class Processor(Iface, TProcessor):
 # HELPER FUNCTIONS AND STRUCTURES
 
 
-class getTransactionHistory_args(object):
+class getTransactionLog_args(object):
     """
     Attributes:
      - cardNumber
@@ -143,7 +283,7 @@ class getTransactionHistory_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('getTransactionHistory_args')
+        oprot.writeStructBegin('getTransactionLog_args')
         if self.cardNumber is not None:
             oprot.writeFieldBegin('cardNumber', TType.STRING, 1)
             oprot.writeString(self.cardNumber.encode('utf-8') if sys.version_info[0] == 2 else self.cardNumber)
@@ -166,14 +306,14 @@ class getTransactionHistory_args(object):
         return not (self == other)
 
 
-class getTransactionHistory_result(object):
+class getTransactionLog_result(object):
     """
     Attributes:
      - success
     """
 
     thrift_spec = (
-        (0, TType.STRING, 'success', 'UTF8', None, ),  # 0
+        (0, TType.LIST, 'success', (TType.STRING, 'UTF8', False), None, ),  # 0
     )
 
     def __init__(self, success=None,):
@@ -189,8 +329,13 @@ class getTransactionHistory_result(object):
             if ftype == TType.STOP:
                 break
             if fid == 0:
-                if ftype == TType.STRING:
-                    self.success = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype24, _size21) = iprot.readListBegin()
+                    for _i25 in range(_size21):
+                        _elem26 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success.append(_elem26)
+                    iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             else:
@@ -202,10 +347,355 @@ class getTransactionHistory_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('getTransactionHistory_result')
+        oprot.writeStructBegin('getTransactionLog_result')
         if self.success is not None:
-            oprot.writeFieldBegin('success', TType.STRING, 0)
-            oprot.writeString(self.success.encode('utf-8') if sys.version_info[0] == 2 else self.success)
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRING, len(self.success))
+            for iter27 in self.success:
+                oprot.writeString(iter27.encode('utf-8') if sys.version_info[0] == 2 else iter27)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class filterTransactions_args(object):
+    """
+    Attributes:
+     - cardNumber
+     - numOfResults
+     - dateRange
+     - amountRange
+     - entryMode
+     - description
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, 'cardNumber', 'UTF8', None, ),  # 1
+        (2, TType.I16, 'numOfResults', None, None, ),  # 2
+        (3, TType.STRING, 'dateRange', 'UTF8', None, ),  # 3
+        (4, TType.STRING, 'amountRange', 'UTF8', None, ),  # 4
+        (5, TType.STRING, 'entryMode', 'UTF8', None, ),  # 5
+        (6, TType.STRING, 'description', 'UTF8', None, ),  # 6
+    )
+
+    def __init__(self, cardNumber=None, numOfResults=None, dateRange=None, amountRange=None, entryMode=None, description=None,):
+        self.cardNumber = cardNumber
+        self.numOfResults = numOfResults
+        self.dateRange = dateRange
+        self.amountRange = amountRange
+        self.entryMode = entryMode
+        self.description = description
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.cardNumber = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I16:
+                    self.numOfResults = iprot.readI16()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.dateRange = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.amountRange = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.entryMode = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.description = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('filterTransactions_args')
+        if self.cardNumber is not None:
+            oprot.writeFieldBegin('cardNumber', TType.STRING, 1)
+            oprot.writeString(self.cardNumber.encode('utf-8') if sys.version_info[0] == 2 else self.cardNumber)
+            oprot.writeFieldEnd()
+        if self.numOfResults is not None:
+            oprot.writeFieldBegin('numOfResults', TType.I16, 2)
+            oprot.writeI16(self.numOfResults)
+            oprot.writeFieldEnd()
+        if self.dateRange is not None:
+            oprot.writeFieldBegin('dateRange', TType.STRING, 3)
+            oprot.writeString(self.dateRange.encode('utf-8') if sys.version_info[0] == 2 else self.dateRange)
+            oprot.writeFieldEnd()
+        if self.amountRange is not None:
+            oprot.writeFieldBegin('amountRange', TType.STRING, 4)
+            oprot.writeString(self.amountRange.encode('utf-8') if sys.version_info[0] == 2 else self.amountRange)
+            oprot.writeFieldEnd()
+        if self.entryMode is not None:
+            oprot.writeFieldBegin('entryMode', TType.STRING, 5)
+            oprot.writeString(self.entryMode.encode('utf-8') if sys.version_info[0] == 2 else self.entryMode)
+            oprot.writeFieldEnd()
+        if self.description is not None:
+            oprot.writeFieldBegin('description', TType.STRING, 6)
+            oprot.writeString(self.description.encode('utf-8') if sys.version_info[0] == 2 else self.description)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class filterTransactions_result(object):
+    """
+    Attributes:
+     - success
+    """
+
+    thrift_spec = (
+        (0, TType.LIST, 'success', (TType.STRING, 'UTF8', False), None, ),  # 0
+    )
+
+    def __init__(self, success=None,):
+        self.success = success
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype31, _size28) = iprot.readListBegin()
+                    for _i32 in range(_size28):
+                        _elem33 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success.append(_elem33)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('filterTransactions_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRING, len(self.success))
+            for iter34 in self.success:
+                oprot.writeString(iter34.encode('utf-8') if sys.version_info[0] == 2 else iter34)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class insertTransaction_args(object):
+    """
+    Attributes:
+     - cardNumber
+     - amount
+     - entryMode
+     - description
+    """
+
+    thrift_spec = (
+        None,  # 0
+        (1, TType.STRING, 'cardNumber', 'UTF8', None, ),  # 1
+        (2, TType.DOUBLE, 'amount', None, None, ),  # 2
+        (3, TType.STRING, 'entryMode', 'UTF8', None, ),  # 3
+        (4, TType.STRING, 'description', 'UTF8', None, ),  # 4
+    )
+
+    def __init__(self, cardNumber=None, amount=None, entryMode=None, description=None,):
+        self.cardNumber = cardNumber
+        self.amount = amount
+        self.entryMode = entryMode
+        self.description = description
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.cardNumber = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.DOUBLE:
+                    self.amount = iprot.readDouble()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.entryMode = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.description = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('insertTransaction_args')
+        if self.cardNumber is not None:
+            oprot.writeFieldBegin('cardNumber', TType.STRING, 1)
+            oprot.writeString(self.cardNumber.encode('utf-8') if sys.version_info[0] == 2 else self.cardNumber)
+            oprot.writeFieldEnd()
+        if self.amount is not None:
+            oprot.writeFieldBegin('amount', TType.DOUBLE, 2)
+            oprot.writeDouble(self.amount)
+            oprot.writeFieldEnd()
+        if self.entryMode is not None:
+            oprot.writeFieldBegin('entryMode', TType.STRING, 3)
+            oprot.writeString(self.entryMode.encode('utf-8') if sys.version_info[0] == 2 else self.entryMode)
+            oprot.writeFieldEnd()
+        if self.description is not None:
+            oprot.writeFieldBegin('description', TType.STRING, 4)
+            oprot.writeString(self.description.encode('utf-8') if sys.version_info[0] == 2 else self.description)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class insertTransaction_result(object):
+    """
+    Attributes:
+     - success
+    """
+
+    thrift_spec = (
+        (0, TType.BOOL, 'success', None, None, ),  # 0
+    )
+
+    def __init__(self, success=None,):
+        self.success = success
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, (self.__class__, self.thrift_spec))
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.BOOL:
+                    self.success = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
+            return
+        oprot.writeStructBegin('insertTransaction_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.BOOL, 0)
+            oprot.writeBool(self.success)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()

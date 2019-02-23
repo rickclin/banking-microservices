@@ -16,19 +16,18 @@ from thrift.transport import TTransport
 
 
 class Iface(object):
-    def authorize(self, cardNumber, amount):
+    def serachCustomer(self, customerId):
         """
         Parameters:
-         - cardNumber
-         - amount
+         - customerId
         """
         pass
 
-    def changeAuthRule(self, cardNumber, newAmount):
+    def updateContactInformation(self, customerId, revisedInfo):
         """
         Parameters:
-         - cardNumber
-         - newAmount
+         - customerId
+         - revisedInfo
         """
         pass
 
@@ -40,25 +39,23 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def authorize(self, cardNumber, amount):
+    def serachCustomer(self, customerId):
         """
         Parameters:
-         - cardNumber
-         - amount
+         - customerId
         """
-        self.send_authorize(cardNumber, amount)
-        return self.recv_authorize()
+        self.send_serachCustomer(customerId)
+        return self.recv_serachCustomer()
 
-    def send_authorize(self, cardNumber, amount):
-        self._oprot.writeMessageBegin('authorize', TMessageType.CALL, self._seqid)
-        args = authorize_args()
-        args.cardNumber = cardNumber
-        args.amount = amount
+    def send_serachCustomer(self, customerId):
+        self._oprot.writeMessageBegin('serachCustomer', TMessageType.CALL, self._seqid)
+        args = serachCustomer_args()
+        args.customerId = customerId
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_authorize(self):
+    def recv_serachCustomer(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -66,32 +63,32 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = authorize_result()
+        result = serachCustomer_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "authorize failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "serachCustomer failed: unknown result")
 
-    def changeAuthRule(self, cardNumber, newAmount):
+    def updateContactInformation(self, customerId, revisedInfo):
         """
         Parameters:
-         - cardNumber
-         - newAmount
+         - customerId
+         - revisedInfo
         """
-        self.send_changeAuthRule(cardNumber, newAmount)
-        return self.recv_changeAuthRule()
+        self.send_updateContactInformation(customerId, revisedInfo)
+        return self.recv_updateContactInformation()
 
-    def send_changeAuthRule(self, cardNumber, newAmount):
-        self._oprot.writeMessageBegin('changeAuthRule', TMessageType.CALL, self._seqid)
-        args = changeAuthRule_args()
-        args.cardNumber = cardNumber
-        args.newAmount = newAmount
+    def send_updateContactInformation(self, customerId, revisedInfo):
+        self._oprot.writeMessageBegin('updateContactInformation', TMessageType.CALL, self._seqid)
+        args = updateContactInformation_args()
+        args.customerId = customerId
+        args.revisedInfo = revisedInfo
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_changeAuthRule(self):
+    def recv_updateContactInformation(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -99,20 +96,20 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = changeAuthRule_result()
+        result = updateContactInformation_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "changeAuthRule failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "updateContactInformation failed: unknown result")
 
 
 class Processor(Iface, TProcessor):
     def __init__(self, handler):
         self._handler = handler
         self._processMap = {}
-        self._processMap["authorize"] = Processor.process_authorize
-        self._processMap["changeAuthRule"] = Processor.process_changeAuthRule
+        self._processMap["serachCustomer"] = Processor.process_serachCustomer
+        self._processMap["updateContactInformation"] = Processor.process_updateContactInformation
 
     def process(self, iprot, oprot):
         (name, type, seqid) = iprot.readMessageBegin()
@@ -129,13 +126,13 @@ class Processor(Iface, TProcessor):
             self._processMap[name](self, seqid, iprot, oprot)
         return True
 
-    def process_authorize(self, seqid, iprot, oprot):
-        args = authorize_args()
+    def process_serachCustomer(self, seqid, iprot, oprot):
+        args = serachCustomer_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = authorize_result()
+        result = serachCustomer_result()
         try:
-            result.success = self._handler.authorize(args.cardNumber, args.amount)
+            result.success = self._handler.serachCustomer(args.customerId)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -143,18 +140,18 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("authorize", msg_type, seqid)
+        oprot.writeMessageBegin("serachCustomer", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_changeAuthRule(self, seqid, iprot, oprot):
-        args = changeAuthRule_args()
+    def process_updateContactInformation(self, seqid, iprot, oprot):
+        args = updateContactInformation_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = changeAuthRule_result()
+        result = updateContactInformation_result()
         try:
-            result.success = self._handler.changeAuthRule(args.cardNumber, args.newAmount)
+            result.success = self._handler.updateContactInformation(args.customerId, args.revisedInfo)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -162,7 +159,7 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("changeAuthRule", msg_type, seqid)
+        oprot.writeMessageBegin("updateContactInformation", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -170,22 +167,19 @@ class Processor(Iface, TProcessor):
 # HELPER FUNCTIONS AND STRUCTURES
 
 
-class authorize_args(object):
+class serachCustomer_args(object):
     """
     Attributes:
-     - cardNumber
-     - amount
+     - customerId
     """
 
     thrift_spec = (
         None,  # 0
-        (1, TType.STRING, 'cardNumber', 'UTF8', None, ),  # 1
-        (2, TType.DOUBLE, 'amount', None, None, ),  # 2
+        (1, TType.STRING, 'customerId', 'UTF8', None, ),  # 1
     )
 
-    def __init__(self, cardNumber=None, amount=None,):
-        self.cardNumber = cardNumber
-        self.amount = amount
+    def __init__(self, customerId=None,):
+        self.customerId = customerId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -198,12 +192,7 @@ class authorize_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.cardNumber = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.DOUBLE:
-                    self.amount = iprot.readDouble()
+                    self.customerId = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -215,14 +204,10 @@ class authorize_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('authorize_args')
-        if self.cardNumber is not None:
-            oprot.writeFieldBegin('cardNumber', TType.STRING, 1)
-            oprot.writeString(self.cardNumber.encode('utf-8') if sys.version_info[0] == 2 else self.cardNumber)
-            oprot.writeFieldEnd()
-        if self.amount is not None:
-            oprot.writeFieldBegin('amount', TType.DOUBLE, 2)
-            oprot.writeDouble(self.amount)
+        oprot.writeStructBegin('serachCustomer_args')
+        if self.customerId is not None:
+            oprot.writeFieldBegin('customerId', TType.STRING, 1)
+            oprot.writeString(self.customerId.encode('utf-8') if sys.version_info[0] == 2 else self.customerId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -242,14 +227,14 @@ class authorize_args(object):
         return not (self == other)
 
 
-class authorize_result(object):
+class serachCustomer_result(object):
     """
     Attributes:
      - success
     """
 
     thrift_spec = (
-        (0, TType.BOOL, 'success', None, None, ),  # 0
+        (0, TType.LIST, 'success', (TType.STRING, 'UTF8', False), None, ),  # 0
     )
 
     def __init__(self, success=None,):
@@ -265,8 +250,13 @@ class authorize_result(object):
             if ftype == TType.STOP:
                 break
             if fid == 0:
-                if ftype == TType.BOOL:
-                    self.success = iprot.readBool()
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype91, _size88) = iprot.readListBegin()
+                    for _i92 in range(_size88):
+                        _elem93 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success.append(_elem93)
+                    iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             else:
@@ -278,10 +268,13 @@ class authorize_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('authorize_result')
+        oprot.writeStructBegin('serachCustomer_result')
         if self.success is not None:
-            oprot.writeFieldBegin('success', TType.BOOL, 0)
-            oprot.writeBool(self.success)
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRING, len(self.success))
+            for iter94 in self.success:
+                oprot.writeString(iter94.encode('utf-8') if sys.version_info[0] == 2 else iter94)
+            oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -301,22 +294,22 @@ class authorize_result(object):
         return not (self == other)
 
 
-class changeAuthRule_args(object):
+class updateContactInformation_args(object):
     """
     Attributes:
-     - cardNumber
-     - newAmount
+     - customerId
+     - revisedInfo
     """
 
     thrift_spec = (
         None,  # 0
-        (1, TType.STRING, 'cardNumber', 'UTF8', None, ),  # 1
-        (2, TType.DOUBLE, 'newAmount', None, None, ),  # 2
+        (1, TType.STRING, 'customerId', 'UTF8', None, ),  # 1
+        (2, TType.MAP, 'revisedInfo', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 2
     )
 
-    def __init__(self, cardNumber=None, newAmount=None,):
-        self.cardNumber = cardNumber
-        self.newAmount = newAmount
+    def __init__(self, customerId=None, revisedInfo=None,):
+        self.customerId = customerId
+        self.revisedInfo = revisedInfo
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -329,12 +322,18 @@ class changeAuthRule_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.cardNumber = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                    self.customerId = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
-                if ftype == TType.DOUBLE:
-                    self.newAmount = iprot.readDouble()
+                if ftype == TType.MAP:
+                    self.revisedInfo = {}
+                    (_ktype96, _vtype97, _size95) = iprot.readMapBegin()
+                    for _i99 in range(_size95):
+                        _key100 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        _val101 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.revisedInfo[_key100] = _val101
+                    iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
             else:
@@ -346,14 +345,18 @@ class changeAuthRule_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('changeAuthRule_args')
-        if self.cardNumber is not None:
-            oprot.writeFieldBegin('cardNumber', TType.STRING, 1)
-            oprot.writeString(self.cardNumber.encode('utf-8') if sys.version_info[0] == 2 else self.cardNumber)
+        oprot.writeStructBegin('updateContactInformation_args')
+        if self.customerId is not None:
+            oprot.writeFieldBegin('customerId', TType.STRING, 1)
+            oprot.writeString(self.customerId.encode('utf-8') if sys.version_info[0] == 2 else self.customerId)
             oprot.writeFieldEnd()
-        if self.newAmount is not None:
-            oprot.writeFieldBegin('newAmount', TType.DOUBLE, 2)
-            oprot.writeDouble(self.newAmount)
+        if self.revisedInfo is not None:
+            oprot.writeFieldBegin('revisedInfo', TType.MAP, 2)
+            oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.revisedInfo))
+            for kiter102, viter103 in self.revisedInfo.items():
+                oprot.writeString(kiter102.encode('utf-8') if sys.version_info[0] == 2 else kiter102)
+                oprot.writeString(viter103.encode('utf-8') if sys.version_info[0] == 2 else viter103)
+            oprot.writeMapEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -373,7 +376,7 @@ class changeAuthRule_args(object):
         return not (self == other)
 
 
-class changeAuthRule_result(object):
+class updateContactInformation_result(object):
     """
     Attributes:
      - success
@@ -409,7 +412,7 @@ class changeAuthRule_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('changeAuthRule_result')
+        oprot.writeStructBegin('updateContactInformation_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.BOOL, 0)
             oprot.writeBool(self.success)

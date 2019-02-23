@@ -16,7 +16,7 @@ else:
 from thrift.transport import TTransport, TSocket, TSSLSocket, THttpClient
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
-from bank import TransactionHistory
+from bank import TransactionHistoryDB
 from bank.ttypes import *
 
 if len(sys.argv) <= 1 or sys.argv[1] == '--help':
@@ -25,7 +25,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('')
     print('Functions:')
     print('   getTransactionLog(string cardNumber)')
-    print('   filterTransactions(string cardNumber, i16 numOfResults, string dateRange, string amountRange, string entryMode, string description)')
     print('  bool insertTransaction(string cardNumber, double amount, string entryMode, string description)')
     print('')
     sys.exit(0)
@@ -103,7 +102,7 @@ else:
     else:
         transport = TTransport.TBufferedTransport(socket)
 protocol = TBinaryProtocol(transport)
-client = TransactionHistory.Client(protocol)
+client = TransactionHistoryDB.Client(protocol)
 transport.open()
 
 if cmd == 'getTransactionLog':
@@ -111,12 +110,6 @@ if cmd == 'getTransactionLog':
         print('getTransactionLog requires 1 args')
         sys.exit(1)
     pp.pprint(client.getTransactionLog(args[0],))
-
-elif cmd == 'filterTransactions':
-    if len(args) != 6:
-        print('filterTransactions requires 6 args')
-        sys.exit(1)
-    pp.pprint(client.filterTransactions(args[0], eval(args[1]), args[2], args[3], args[4], args[5],))
 
 elif cmd == 'insertTransaction':
     if len(args) != 4:
