@@ -12,13 +12,6 @@ python3 HelloworldServer.py &
 # python3 AuthServer.py &
 # #echo ''
 # 
-# echo 'Starting CardManagementServer...'
-# python3 CardManagementServer.py &
-# #echo ''
-# 
-# echo 'Starting CustomerInformationServer...'
-# python3 CustomerInformationServer.py & 
-# #echo ''
 
 echo '[localhost:19093] Starting CardManagementServer...'
 python3 CardManagementServer.py &
@@ -44,3 +37,18 @@ echo '[localhost:19098] Starting PaymentAuthorizationDB...'
 python3 PaymentAuthorizationDBServer.py &
 #echo ''
 
+echo '[localhost:19199] Starting ContactInformationServer...'
+python3 ContactInformationServer.py &
+#echo ''
+
+echo '[localhost:19100] Starting RegisteredProductsServer...'
+python3 RegisteredProductsServer.py &
+#echo ''
+
+echo '[localhost:19101] Starting ContactInformationDB...'
+python3 ContactInformationDBServer.py &
+#echo ''
+
+echo '[localhost:19102] Starting RegisteredProductsDB...'
+python3 RegisteredProductsDBServer.py &
+#echo ''

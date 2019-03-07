@@ -68,7 +68,7 @@ class TransactionHistoryHandler:
       return output[:int(numOfResults)] if numOfResults > 0 else output
 
     def insertTransaction(self, cardNumber, amount, entryMode, description):
-      clientTransactionDB, transportTransactionDB = createConnection(19097, TransactionHistoryDB)
+      clientTransactionDB, transportTransactionDB = self.createConnection(19097, TransactionHistoryDB)
       ack = clientTransactionDB.insertTransaction(cardNumber, amount, entryMode, description)
       transportTransactionDB.close()
       return ack

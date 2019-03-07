@@ -26,6 +26,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('Functions:')
     print('   getAccountNumbers(string customerId)')
     print('   getCardNumbers(string customerId)')
+    print('  string addCard(string customerId)')
+    print('  string addAccount(string customerId)')
     print('')
     sys.exit(0)
 
@@ -116,6 +118,18 @@ elif cmd == 'getCardNumbers':
         print('getCardNumbers requires 1 args')
         sys.exit(1)
     pp.pprint(client.getCardNumbers(args[0],))
+
+elif cmd == 'addCard':
+    if len(args) != 1:
+        print('addCard requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.addCard(args[0],))
+
+elif cmd == 'addAccount':
+    if len(args) != 1:
+        print('addAccount requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.addAccount(args[0],))
 
 else:
     print('Unrecognized method %s' % cmd)

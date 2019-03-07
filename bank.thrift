@@ -128,15 +128,7 @@ service PaymentAuthorizationDB {
 // level-1 service
 service CustomerInformation {
   
-  map<string, string> getContactInformation (
-    1: string customerId
-  ),
-
-#  list<string> getRegisteredProducts (
-#    1: string customerId
-#  ),
-
-  list<string> retrieveContactInformation ( 
+  map<string, string> retrieveContactInformation ( 
     1: string customerId
   ),
 
@@ -151,7 +143,7 @@ service CustomerInformation {
     3: string answer
   ),
 
-  list<string> getRegisteredProducts (
+  map<string, list<string>> getRegisteredProducts (
     1: string customerId
   ),
 
@@ -161,13 +153,21 @@ service CustomerInformation {
 
   list<string> getCardNumbers (
     1: string customerId
-  )
+  ),
+
+  string newAccount (
+    1: string customerId
+  ),
+
+  string newCard (
+    1: string customerId
+  ),
 }
 
 // level-2 service
 service ContactInformation {
 
-  list<string> serachCustomer (
+  map<string, string> retrieveCustomer (
     1: string customerId
   ),
 
@@ -180,7 +180,7 @@ service ContactInformation {
 // customer contact information simulated DB
 service ContactInformationDB {
   
-  list<string> searchCustomer (
+  map<string, string> retrieveCustomer (
     1: string customerId
   ),
 
@@ -194,7 +194,15 @@ service ContactInformationDB {
 // level-2 service
 service RegisteredProducts {
   
-  list<string> getRegisteredProducts (
+  map<string, list<string>> getRegisteredProducts (
+    1: string customerId
+  )
+
+  string addCard (
+    1: string customerId
+  ),
+
+  string addAccount (
     1: string customerId
   )
 }
@@ -207,6 +215,14 @@ service RegisteredProductsDB {
   ),
 
   list<string> getCardNumbers (
+    1: string customerId
+  ),
+
+  string addCard (
+    1: string customerId
+  ),
+
+  string addAccount (
     1: string customerId
   )
 

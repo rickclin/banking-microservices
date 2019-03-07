@@ -16,7 +16,7 @@ from thrift.transport import TTransport
 
 
 class Iface(object):
-    def serachCustomer(self, customerId):
+    def retrieveCustomer(self, customerId):
         """
         Parameters:
          - customerId
@@ -39,23 +39,23 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def serachCustomer(self, customerId):
+    def retrieveCustomer(self, customerId):
         """
         Parameters:
          - customerId
         """
-        self.send_serachCustomer(customerId)
-        return self.recv_serachCustomer()
+        self.send_retrieveCustomer(customerId)
+        return self.recv_retrieveCustomer()
 
-    def send_serachCustomer(self, customerId):
-        self._oprot.writeMessageBegin('serachCustomer', TMessageType.CALL, self._seqid)
-        args = serachCustomer_args()
+    def send_retrieveCustomer(self, customerId):
+        self._oprot.writeMessageBegin('retrieveCustomer', TMessageType.CALL, self._seqid)
+        args = retrieveCustomer_args()
         args.customerId = customerId
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_serachCustomer(self):
+    def recv_retrieveCustomer(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -63,12 +63,12 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = serachCustomer_result()
+        result = retrieveCustomer_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "serachCustomer failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "retrieveCustomer failed: unknown result")
 
     def updateContactInformation(self, customerId, revisedInfo):
         """
@@ -108,7 +108,7 @@ class Processor(Iface, TProcessor):
     def __init__(self, handler):
         self._handler = handler
         self._processMap = {}
-        self._processMap["serachCustomer"] = Processor.process_serachCustomer
+        self._processMap["retrieveCustomer"] = Processor.process_retrieveCustomer
         self._processMap["updateContactInformation"] = Processor.process_updateContactInformation
 
     def process(self, iprot, oprot):
@@ -126,13 +126,13 @@ class Processor(Iface, TProcessor):
             self._processMap[name](self, seqid, iprot, oprot)
         return True
 
-    def process_serachCustomer(self, seqid, iprot, oprot):
-        args = serachCustomer_args()
+    def process_retrieveCustomer(self, seqid, iprot, oprot):
+        args = retrieveCustomer_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = serachCustomer_result()
+        result = retrieveCustomer_result()
         try:
-            result.success = self._handler.serachCustomer(args.customerId)
+            result.success = self._handler.retrieveCustomer(args.customerId)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -140,7 +140,7 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("serachCustomer", msg_type, seqid)
+        oprot.writeMessageBegin("retrieveCustomer", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -167,7 +167,7 @@ class Processor(Iface, TProcessor):
 # HELPER FUNCTIONS AND STRUCTURES
 
 
-class serachCustomer_args(object):
+class retrieveCustomer_args(object):
     """
     Attributes:
      - customerId
@@ -204,7 +204,7 @@ class serachCustomer_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('serachCustomer_args')
+        oprot.writeStructBegin('retrieveCustomer_args')
         if self.customerId is not None:
             oprot.writeFieldBegin('customerId', TType.STRING, 1)
             oprot.writeString(self.customerId.encode('utf-8') if sys.version_info[0] == 2 else self.customerId)
@@ -227,14 +227,14 @@ class serachCustomer_args(object):
         return not (self == other)
 
 
-class serachCustomer_result(object):
+class retrieveCustomer_result(object):
     """
     Attributes:
      - success
     """
 
     thrift_spec = (
-        (0, TType.LIST, 'success', (TType.STRING, 'UTF8', False), None, ),  # 0
+        (0, TType.MAP, 'success', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 0
     )
 
     def __init__(self, success=None,):
@@ -250,13 +250,14 @@ class serachCustomer_result(object):
             if ftype == TType.STOP:
                 break
             if fid == 0:
-                if ftype == TType.LIST:
-                    self.success = []
-                    (_etype91, _size88) = iprot.readListBegin()
-                    for _i92 in range(_size88):
-                        _elem93 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        self.success.append(_elem93)
-                    iprot.readListEnd()
+                if ftype == TType.MAP:
+                    self.success = {}
+                    (_ktype91, _vtype92, _size90) = iprot.readMapBegin()
+                    for _i94 in range(_size90):
+                        _key95 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        _val96 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success[_key95] = _val96
+                    iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
             else:
@@ -268,13 +269,14 @@ class serachCustomer_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('serachCustomer_result')
+        oprot.writeStructBegin('retrieveCustomer_result')
         if self.success is not None:
-            oprot.writeFieldBegin('success', TType.LIST, 0)
-            oprot.writeListBegin(TType.STRING, len(self.success))
-            for iter94 in self.success:
-                oprot.writeString(iter94.encode('utf-8') if sys.version_info[0] == 2 else iter94)
-            oprot.writeListEnd()
+            oprot.writeFieldBegin('success', TType.MAP, 0)
+            oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.success))
+            for kiter97, viter98 in self.success.items():
+                oprot.writeString(kiter97.encode('utf-8') if sys.version_info[0] == 2 else kiter97)
+                oprot.writeString(viter98.encode('utf-8') if sys.version_info[0] == 2 else viter98)
+            oprot.writeMapEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -328,11 +330,11 @@ class updateContactInformation_args(object):
             elif fid == 2:
                 if ftype == TType.MAP:
                     self.revisedInfo = {}
-                    (_ktype96, _vtype97, _size95) = iprot.readMapBegin()
-                    for _i99 in range(_size95):
-                        _key100 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        _val101 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        self.revisedInfo[_key100] = _val101
+                    (_ktype100, _vtype101, _size99) = iprot.readMapBegin()
+                    for _i103 in range(_size99):
+                        _key104 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        _val105 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.revisedInfo[_key104] = _val105
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -353,9 +355,9 @@ class updateContactInformation_args(object):
         if self.revisedInfo is not None:
             oprot.writeFieldBegin('revisedInfo', TType.MAP, 2)
             oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.revisedInfo))
-            for kiter102, viter103 in self.revisedInfo.items():
-                oprot.writeString(kiter102.encode('utf-8') if sys.version_info[0] == 2 else kiter102)
-                oprot.writeString(viter103.encode('utf-8') if sys.version_info[0] == 2 else viter103)
+            for kiter106, viter107 in self.revisedInfo.items():
+                oprot.writeString(kiter106.encode('utf-8') if sys.version_info[0] == 2 else kiter106)
+                oprot.writeString(viter107.encode('utf-8') if sys.version_info[0] == 2 else viter107)
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()

@@ -5,17 +5,14 @@ import sys
 sys.path.append('gen-py')
 
 from thrift           import Thrift
-from bank             import CustomerInformation
-
-from datetime         import datetime
+from bank             import CustomerInformation, RegisteredProducts, ContactInformation
 
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
-contact_info_db = { 'ricklin' : { 'number' : '6666666666', 'address' : '123 Broadway N'}}
-customer_product_db = { 'ricklin' : ['checking', 'savings', 'platinum card']}
+SERVER_PORT = ('localhost', 19094)
 
 class CustomerInformationHandler:
     def __init__(self):
@@ -24,42 +21,62 @@ class CustomerInformationHandler:
     def ping(self):
         print('ping()')
 
-    def getContactInformation(self, customerId):
-      info = contact_info_db[customerId]
-      return info
+    def createConnection(self, port, server):
+      transport = TSocket.TSocket('localhost', port)
+      transport = TTransport.TBufferedTransport(transport)
+      protocol = TBinaryProtocol.TBinaryProtocol(transport)
+      client = server.Client(protocol)
+      transport.open()
+      return client, transport
 
-    def getRegisteredProducts(self, customerId):
-      products = customer_product_db[customerId]
-      return products
-  
     def retrieveContactInformation(self, customerId):
-      info = clientContactInformation.searchCustomer(customemrId)
-      return info
+      clientContact, transportContact = self.createConnection(19099, ContactInformation)
+      contact = clientContact.retrieveCustomer(customerId)
+      transportContact.close()
+      return contact
 
     def updateContactInformation(self, customerId, revisedInfo):
-      return clientContactInformation.updateContactInformation(customerId, revisedInfo)
+      clientContact, transportContact = self.createConnection(19099, ContactInformation)
+      ack = clientContact.updateContactInformation(customerId, revisedInfo)
+      transportContact.close()
+      return ack
 
     def verifyContactInformation(self, customerId, field, answer):
-      info = clientContactInformation.searchCustomer(customerId)
-      info = info.split(',')
-      if info[field] == answer: # there should be an enum from field to info indexes
+      clientContact, transportContact = self.createConnection(19099, ContactInformation)
+      contact =  clientContact.retrieveCustomer(customerId)
+      transportContact.close()
+      if contact[field] == answer:
         return True
       else:
         return False
 
     def getRegisteredProducts(self, customerId):
-      products = clientRegisteredProducts.getRegisteredProducts(customerId)
+      clientProducts, transportProducts = self.createConnection(19100, RegisteredProducts)
+      products = clientProducts.getRegisteredProducts(customerId)
+      transportProducts.close()
       return products
 
     def getAccountNumbers(self, customerId):
-      products = clientRegisteredProducts.getRegisteredProducts(customerId)
-      accounts = products # extract account numbers from query
+      products = self.getRegisteredProducts(customerId)
+      accounts = products['accounts']
       return accounts
 
     def getCardNumbers(self, customerId):
-      products = clientRegisteredProducts.getRegisteredProducts(customerId)
-      cards = products # extract card numbers from query
+      products = self.getRegisteredProducts(customerId)
+      cards = products['cards']
       return cards
+
+    def newAccount(self, customerId):
+      clientProducts, transportProducts = self.createConnection(19100, RegisteredProducts)
+      newAccountNumber = clientProducts.addAccount(customerId)
+      transportProducts.close()
+      return newAccountNumber
+   
+    def newCard(self, customerId):
+      clientProducts, transportProducts = self.createConnection(19100, RegisteredProducts)
+      newCardNumber = clientProducts.addCard(customerId)
+      transportProducts.close()
+      return newCardNumber
 
 if __name__ == '__main__':
     handler = CustomerInformationHandler()
@@ -76,6 +93,6 @@ if __name__ == '__main__':
     # server = TServer.TThreadPoolServer(
     #     processor, transport, tfactory, pfactory)
 
-    print('Starting the server...')
+    print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + '] Starting the CustomerInformationServer...')
     server.serve()
-    print('Customer Information done.')
+    print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + '] CustomerInformationServer done.')

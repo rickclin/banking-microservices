@@ -24,13 +24,14 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
     print('')
     print('Functions:')
-    print('   getContactInformation(string customerId)')
     print('   retrieveContactInformation(string customerId)')
     print('  bool updateContactInformation(string customerId,  revisedInfo)')
     print('  bool verifyContactInformation(string customerId, string field, string answer)')
     print('   getRegisteredProducts(string customerId)')
     print('   getAccountNumbers(string customerId)')
     print('   getCardNumbers(string customerId)')
+    print('  string newAccount(string customerId)')
+    print('  string newCard(string customerId)')
     print('')
     sys.exit(0)
 
@@ -110,13 +111,7 @@ protocol = TBinaryProtocol(transport)
 client = CustomerInformation.Client(protocol)
 transport.open()
 
-if cmd == 'getContactInformation':
-    if len(args) != 1:
-        print('getContactInformation requires 1 args')
-        sys.exit(1)
-    pp.pprint(client.getContactInformation(args[0],))
-
-elif cmd == 'retrieveContactInformation':
+if cmd == 'retrieveContactInformation':
     if len(args) != 1:
         print('retrieveContactInformation requires 1 args')
         sys.exit(1)
@@ -151,6 +146,18 @@ elif cmd == 'getCardNumbers':
         print('getCardNumbers requires 1 args')
         sys.exit(1)
     pp.pprint(client.getCardNumbers(args[0],))
+
+elif cmd == 'newAccount':
+    if len(args) != 1:
+        print('newAccount requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.newAccount(args[0],))
+
+elif cmd == 'newCard':
+    if len(args) != 1:
+        print('newCard requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.newCard(args[0],))
 
 else:
     print('Unrecognized method %s' % cmd)

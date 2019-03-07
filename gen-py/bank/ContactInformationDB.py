@@ -16,7 +16,7 @@ from thrift.transport import TTransport
 
 
 class Iface(object):
-    def searchCustomer(self, customerId):
+    def retrieveCustomer(self, customerId):
         """
         Parameters:
          - customerId
@@ -39,23 +39,23 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def searchCustomer(self, customerId):
+    def retrieveCustomer(self, customerId):
         """
         Parameters:
          - customerId
         """
-        self.send_searchCustomer(customerId)
-        return self.recv_searchCustomer()
+        self.send_retrieveCustomer(customerId)
+        return self.recv_retrieveCustomer()
 
-    def send_searchCustomer(self, customerId):
-        self._oprot.writeMessageBegin('searchCustomer', TMessageType.CALL, self._seqid)
-        args = searchCustomer_args()
+    def send_retrieveCustomer(self, customerId):
+        self._oprot.writeMessageBegin('retrieveCustomer', TMessageType.CALL, self._seqid)
+        args = retrieveCustomer_args()
         args.customerId = customerId
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_searchCustomer(self):
+    def recv_retrieveCustomer(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -63,12 +63,12 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = searchCustomer_result()
+        result = retrieveCustomer_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "searchCustomer failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "retrieveCustomer failed: unknown result")
 
     def updateContactInformation(self, customerId, revisedInfo):
         """
@@ -108,7 +108,7 @@ class Processor(Iface, TProcessor):
     def __init__(self, handler):
         self._handler = handler
         self._processMap = {}
-        self._processMap["searchCustomer"] = Processor.process_searchCustomer
+        self._processMap["retrieveCustomer"] = Processor.process_retrieveCustomer
         self._processMap["updateContactInformation"] = Processor.process_updateContactInformation
 
     def process(self, iprot, oprot):
@@ -126,13 +126,13 @@ class Processor(Iface, TProcessor):
             self._processMap[name](self, seqid, iprot, oprot)
         return True
 
-    def process_searchCustomer(self, seqid, iprot, oprot):
-        args = searchCustomer_args()
+    def process_retrieveCustomer(self, seqid, iprot, oprot):
+        args = retrieveCustomer_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = searchCustomer_result()
+        result = retrieveCustomer_result()
         try:
-            result.success = self._handler.searchCustomer(args.customerId)
+            result.success = self._handler.retrieveCustomer(args.customerId)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -140,7 +140,7 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("searchCustomer", msg_type, seqid)
+        oprot.writeMessageBegin("retrieveCustomer", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -167,7 +167,7 @@ class Processor(Iface, TProcessor):
 # HELPER FUNCTIONS AND STRUCTURES
 
 
-class searchCustomer_args(object):
+class retrieveCustomer_args(object):
     """
     Attributes:
      - customerId
@@ -204,7 +204,7 @@ class searchCustomer_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('searchCustomer_args')
+        oprot.writeStructBegin('retrieveCustomer_args')
         if self.customerId is not None:
             oprot.writeFieldBegin('customerId', TType.STRING, 1)
             oprot.writeString(self.customerId.encode('utf-8') if sys.version_info[0] == 2 else self.customerId)
@@ -227,14 +227,14 @@ class searchCustomer_args(object):
         return not (self == other)
 
 
-class searchCustomer_result(object):
+class retrieveCustomer_result(object):
     """
     Attributes:
      - success
     """
 
     thrift_spec = (
-        (0, TType.LIST, 'success', (TType.STRING, 'UTF8', False), None, ),  # 0
+        (0, TType.MAP, 'success', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 0
     )
 
     def __init__(self, success=None,):
@@ -250,13 +250,14 @@ class searchCustomer_result(object):
             if ftype == TType.STOP:
                 break
             if fid == 0:
-                if ftype == TType.LIST:
-                    self.success = []
-                    (_etype107, _size104) = iprot.readListBegin()
-                    for _i108 in range(_size104):
-                        _elem109 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        self.success.append(_elem109)
-                    iprot.readListEnd()
+                if ftype == TType.MAP:
+                    self.success = {}
+                    (_ktype109, _vtype110, _size108) = iprot.readMapBegin()
+                    for _i112 in range(_size108):
+                        _key113 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        _val114 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success[_key113] = _val114
+                    iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
             else:
@@ -268,13 +269,14 @@ class searchCustomer_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('searchCustomer_result')
+        oprot.writeStructBegin('retrieveCustomer_result')
         if self.success is not None:
-            oprot.writeFieldBegin('success', TType.LIST, 0)
-            oprot.writeListBegin(TType.STRING, len(self.success))
-            for iter110 in self.success:
-                oprot.writeString(iter110.encode('utf-8') if sys.version_info[0] == 2 else iter110)
-            oprot.writeListEnd()
+            oprot.writeFieldBegin('success', TType.MAP, 0)
+            oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.success))
+            for kiter115, viter116 in self.success.items():
+                oprot.writeString(kiter115.encode('utf-8') if sys.version_info[0] == 2 else kiter115)
+                oprot.writeString(viter116.encode('utf-8') if sys.version_info[0] == 2 else viter116)
+            oprot.writeMapEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -328,11 +330,11 @@ class updateContactInformation_args(object):
             elif fid == 2:
                 if ftype == TType.MAP:
                     self.revisedInfo = {}
-                    (_ktype112, _vtype113, _size111) = iprot.readMapBegin()
-                    for _i115 in range(_size111):
-                        _key116 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        _val117 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        self.revisedInfo[_key116] = _val117
+                    (_ktype118, _vtype119, _size117) = iprot.readMapBegin()
+                    for _i121 in range(_size117):
+                        _key122 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        _val123 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.revisedInfo[_key122] = _val123
                     iprot.readMapEnd()
                 else:
                     iprot.skip(ftype)
@@ -353,9 +355,9 @@ class updateContactInformation_args(object):
         if self.revisedInfo is not None:
             oprot.writeFieldBegin('revisedInfo', TType.MAP, 2)
             oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.revisedInfo))
-            for kiter118, viter119 in self.revisedInfo.items():
-                oprot.writeString(kiter118.encode('utf-8') if sys.version_info[0] == 2 else kiter118)
-                oprot.writeString(viter119.encode('utf-8') if sys.version_info[0] == 2 else viter119)
+            for kiter124, viter125 in self.revisedInfo.items():
+                oprot.writeString(kiter124.encode('utf-8') if sys.version_info[0] == 2 else kiter124)
+                oprot.writeString(viter125.encode('utf-8') if sys.version_info[0] == 2 else viter125)
             oprot.writeMapEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()

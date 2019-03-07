@@ -24,7 +24,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
     print('')
     print('Functions:')
-    print('   serachCustomer(string customerId)')
+    print('   retrieveCustomer(string customerId)')
     print('  bool updateContactInformation(string customerId,  revisedInfo)')
     print('')
     sys.exit(0)
@@ -105,11 +105,11 @@ protocol = TBinaryProtocol(transport)
 client = ContactInformation.Client(protocol)
 transport.open()
 
-if cmd == 'serachCustomer':
+if cmd == 'retrieveCustomer':
     if len(args) != 1:
-        print('serachCustomer requires 1 args')
+        print('retrieveCustomer requires 1 args')
         sys.exit(1)
-    pp.pprint(client.serachCustomer(args[0],))
+    pp.pprint(client.retrieveCustomer(args[0],))
 
 elif cmd == 'updateContactInformation':
     if len(args) != 2:
