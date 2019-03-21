@@ -81,7 +81,7 @@ class CustomerInformationHandler:
 if __name__ == '__main__':
     handler = CustomerInformationHandler()
     processor = CustomerInformation.Processor(handler)
-    transport = TSocket.TServerSocket(host='localhost', port=19094)
+    transport = TSocket.TServerSocket(host=SERVER_PORT[0], port=SERVER_PORT[1])
     tfactory = TTransport.TBufferedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 

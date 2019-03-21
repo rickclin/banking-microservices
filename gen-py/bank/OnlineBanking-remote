@@ -24,8 +24,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
     print('')
     print('Functions:')
-    print('  string getAccountInformation(string customerId)')
-    print('  string transferMoney(string fromAccountNumber, string toAccountNumber, i16 amount)')
+    print('  string getBalance(string accountNumber)')
+    print('  bool transferMoney(string fromAccount, string toAccount, string amount)')
     print('')
     sys.exit(0)
 
@@ -105,17 +105,17 @@ protocol = TBinaryProtocol(transport)
 client = OnlineBanking.Client(protocol)
 transport.open()
 
-if cmd == 'getAccountInformation':
+if cmd == 'getBalance':
     if len(args) != 1:
-        print('getAccountInformation requires 1 args')
+        print('getBalance requires 1 args')
         sys.exit(1)
-    pp.pprint(client.getAccountInformation(args[0],))
+    pp.pprint(client.getBalance(args[0],))
 
 elif cmd == 'transferMoney':
     if len(args) != 3:
         print('transferMoney requires 3 args')
         sys.exit(1)
-    pp.pprint(client.transferMoney(args[0], args[1], eval(args[2]),))
+    pp.pprint(client.transferMoney(args[0], args[1], args[2],))
 
 else:
     print('Unrecognized method %s' % cmd)

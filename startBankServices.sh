@@ -52,3 +52,19 @@ python3 ContactInformationDBServer.py &
 echo '[localhost:19102] Starting RegisteredProductsDB...'
 python3 RegisteredProductsDBServer.py &
 #echo ''
+
+echo '[localhost:19103] Starting OnlineBankingServer...'
+python3 OnlineBankingServer.py &
+#echo ''
+
+echo '[localhost:19104] Starting AccountInformationServer...'
+python3 AccountInformationServer.py &
+#echo ''
+
+echo '[localhost:19105] Starting MoneyTransferServer...'
+python3 MoneyTransferServer.py &
+#echo ''
+
+echo '[localhost:19106] Starting AccountInformationDB...'
+python3 AccountInformationDBServer.py &
+#echo ''

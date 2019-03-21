@@ -2,8 +2,8 @@
 # choose which test(s) to run
 
 TEST_CARD_MANAGEMENT      = False
-TEST_CUSTOMER_INFORMATION = True
-
+TEST_CUSTOMER_INFORMATION = False
+TEST_ONLINE_BANKING       = True
 
 import sys
 sys.path.append('gen-py')
@@ -24,6 +24,12 @@ if TEST_CUSTOMER_INFORMATION:
   from bank             import ContactInformation     # 19099
   from bank             import ContactInformationDB   # 19101
   from bank             import CustomerInformation    # 19094
+
+if TEST_ONLINE_BANKING:
+  from bank             import AccountInformationDB   # 19106
+  from bank             import AccountInformation     # 19104
+  from bank             import MoneyTransfer          # 19105
+  from bank             import OnlineBanking          # 19103
 
 from thrift           import Thrift
 from thrift.transport import TSocket
@@ -334,8 +340,90 @@ def main():
     assert newCard in clientCustomer.getCardNumbers('accountholder0')
 
     input('[PAUSE] Press Return to continue')
-
+    
     transportCustomer.close()
+
+  if TEST_ONLINE_BANKING:
+    clientAcctInfoDB, transportAcctInfoDB   = createConnection(19106, AccountInformationDB)
+    clientAcctInfo,   transportAcctInfo     = createConnection(19104, AccountInformation)
+    clientMoneyTx,    transportMoneyTx      = createConnection(19105, MoneyTransfer)
+    clientOnlineBank, transportOnlineBank   = createConnection(19103, OnlineBanking)
+
+    print('[TEST] Testing account information simulated DB')
+    print('[TEST] Getting the balance of card account ending in 0000')
+    assert clientAcctInfoDB.getBalance('0000000000000000') == str(50.00)
+    assert clientAcctInfoDB.getBalance('0000000000000001') == 'n/a'
+    input('[PAUSE] Press Return to continue')
+
+    print('[TEST] Updating the balances...')
+    assert clientAcctInfoDB.updateBalance('0000000000000000', '5.50') == str(55.50)
+    assert clientAcctInfoDB.updateBalance('0000000000000001', '0.01') == 'n/a'
+    input('[PAUSE] Press Return to continue')
+    
+    print('[TEST] Adding a new account to the DB...')
+    assert clientAcctInfoDB.addAccount('0000000000000000') == False
+    assert clientAcctInfoDB.addAccount('0000000000000001') == True
+    assert clientAcctInfoDB.getBalance('0000000000000001') == str(0.00)
+    print(clientAcctInfoDB.getBalance('0000000000000001'))
+    input('[PAUSE] Press Return to continue')
+    
+    transportAcctInfoDB.close()
+
+    print('[TEST] Testing account information server...')
+    print('[TEST] Getting the balance of card account ending in 0000')
+    assert clientAcctInfo.getBalance('0000000000000000') == str(55.50)
+    assert clientAcctInfo.getBalance('0000000000000001') == str(0.00)
+    assert clientAcctInfo.getBalance('1000000000000000') == 'n/a'
+    print('[TEST] No problem reading account balances from account information server')
+    input('[PAUSE] Press Return to continue')
+    
+    print('[TEST] changing the balances...')
+    assert clientAcctInfo.updateBalance('0000000000000000', '-5.50') == str(50.00)
+    assert clientAcctInfo.updateBalance('0000000000000001', '-1.00') == str(-1.00)
+    assert clientAcctInfo.updateBalance('1000000000000000', '1.00' ) == 'n/a'
+    print('[TEST] no problem changing the balances from account information server')
+    input('[PAUSE] Press Return to continue')
+  
+    transportAcctInfo.close()
+
+    print('[TEST] testing money transfer server...')
+    assert clientMoneyTx.transferMoney('0000000000000000', '0000000000000001', '5.00') == True
+    # assert clientAcctInfo.getBalance('0000000000000000') == str(45.00)
+    # assert clientAcctInfo.getBalance('0000000000000000') == str(4.00)
+    assert clientMoneyTx.transferMoney('0000000000000001', '0000000000000000', '50.00') == False
+    # assert clientAcctInfo.getBalance('0000000000000000') == str(45.00)
+    # assert clientAcctInfo.getBalance('0000000000000000') == str(4.00)
+    assert clientMoneyTx.transferMoney('1000000000000000', '0000000000000000', '5.00') == False
+    assert clientMoneyTx.transferMoney('0000000000000000', '1000000000000000', '5.00') == False
+    # assert clientAcctInfo.getBalance('0000000000000000') == str(45.00)
+    print('[TEST] no issue was found while transferring money')
+    input('[PAUSE] Press Return to continue')
+
+    transportMoneyTx.close()
+
+    print('[TEST] testing online banking main server')
+    print('[TEST] checking the balances...')
+    assert clientOnlineBank.getBalance('0000000000000000') == str(45.00)
+    assert clientOnlineBank.getBalance('0000000000000001') == str(4.00)
+    assert clientOnlineBank.getBalance('0000000000000002') == 'n/a'
+    input('[PAUSE] Press Return to continue')
+
+    print('[TEST] transferring money')
+    assert clientOnlineBank.transferMoney('0000000000000000', '0000000000000001', '5.00') == True
+    assert clientOnlineBank.getBalance('0000000000000000') == str(40.00)
+    assert clientOnlineBank.getBalance('0000000000000001') == str(9.00)
+    assert clientOnlineBank.transferMoney('0000000000000001', '0000000000000000', '50.00') == False
+    assert clientOnlineBank.getBalance('0000000000000000') == str(40.00)
+    assert clientOnlineBank.getBalance('0000000000000001') == str(9.00)
+    assert clientOnlineBank.transferMoney('1000000000000000', '0000000000000000', '5.00') == False
+    assert clientOnlineBank.transferMoney('0000000000000000', '1000000000000000', '5.00') == False
+    assert clientOnlineBank.getBalance('0000000000000000') == str(40.00)
+    print('[TEST] no issue was found while transferring money')
+    input('[PAUSE] Press Return to continue')
+
+    transportOnlineBank.close()
+
+
 if __name__ == '__main__':
   try:
     main()

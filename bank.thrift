@@ -230,18 +230,64 @@ service RegisteredProductsDB {
 
 // level-1 service
 service OnlineBanking {
-  string getAccountInformation(1: string customerId),
-  string transferMoney(1: string fromAccountNumber, 2: string toAccountNumber, 3: i16 amount)
+  
+  string getBalance (
+    1: string accountNumber
+  ),
+
+  bool transferMoney (
+    1: string fromAccount,
+    2: string toAccount
+    3: string amount
+  )
+  
 }
 
-// level-2 service -- card management
-// service PaymentAuthorization {
-//   bool   authorize(1: string cardNumber, 2: i16 amount),
-//   string getScheme(1: string cardNumber),
-//   string changeScheme(1: string cardNumber)
-// }
+// level-2 service
+service AccountInformation {
+  
+  string getBalance (
+    1: string accountNumber,
+  ),
 
-// level-2 service -- card management
-// service TransactionHistory {
-//   string getTransactionHistory(1: string cardNumber)
-// }
+  string updateBalance (
+    1: string accountNumber,
+    2: string amount
+  )
+
+}
+
+// account information simulated DB
+service AccountInformationDB {
+  
+  // returns 'n/a' if account is not in DB
+  // or the balance in string format
+  string getBalance (
+    1: string accountNumber
+  ),
+
+  // returns 'n/a' if account is not in DB
+  // or the balance in string format
+  string updateBalance (
+    1: string accountNumber,
+    2: string amount
+  ),
+
+  // True  if new account was added
+  // False if the specified account was already in the DB
+  bool addAccount (
+    1: string accountNumber
+  )
+
+}
+
+// level-2 service
+service MoneyTransfer {
+  
+  bool transferMoney (
+    1: string fromAccount,
+    2: string toAccount,
+    3: string amount
+  )
+
+}

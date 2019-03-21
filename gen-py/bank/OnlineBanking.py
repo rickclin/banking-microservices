@@ -16,18 +16,18 @@ from thrift.transport import TTransport
 
 
 class Iface(object):
-    def getAccountInformation(self, customerId):
+    def getBalance(self, accountNumber):
         """
         Parameters:
-         - customerId
+         - accountNumber
         """
         pass
 
-    def transferMoney(self, fromAccountNumber, toAccountNumber, amount):
+    def transferMoney(self, fromAccount, toAccount, amount):
         """
         Parameters:
-         - fromAccountNumber
-         - toAccountNumber
+         - fromAccount
+         - toAccount
          - amount
         """
         pass
@@ -40,23 +40,23 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def getAccountInformation(self, customerId):
+    def getBalance(self, accountNumber):
         """
         Parameters:
-         - customerId
+         - accountNumber
         """
-        self.send_getAccountInformation(customerId)
-        return self.recv_getAccountInformation()
+        self.send_getBalance(accountNumber)
+        return self.recv_getBalance()
 
-    def send_getAccountInformation(self, customerId):
-        self._oprot.writeMessageBegin('getAccountInformation', TMessageType.CALL, self._seqid)
-        args = getAccountInformation_args()
-        args.customerId = customerId
+    def send_getBalance(self, accountNumber):
+        self._oprot.writeMessageBegin('getBalance', TMessageType.CALL, self._seqid)
+        args = getBalance_args()
+        args.accountNumber = accountNumber
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_getAccountInformation(self):
+    def recv_getBalance(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -64,28 +64,28 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = getAccountInformation_result()
+        result = getBalance_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "getAccountInformation failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "getBalance failed: unknown result")
 
-    def transferMoney(self, fromAccountNumber, toAccountNumber, amount):
+    def transferMoney(self, fromAccount, toAccount, amount):
         """
         Parameters:
-         - fromAccountNumber
-         - toAccountNumber
+         - fromAccount
+         - toAccount
          - amount
         """
-        self.send_transferMoney(fromAccountNumber, toAccountNumber, amount)
+        self.send_transferMoney(fromAccount, toAccount, amount)
         return self.recv_transferMoney()
 
-    def send_transferMoney(self, fromAccountNumber, toAccountNumber, amount):
+    def send_transferMoney(self, fromAccount, toAccount, amount):
         self._oprot.writeMessageBegin('transferMoney', TMessageType.CALL, self._seqid)
         args = transferMoney_args()
-        args.fromAccountNumber = fromAccountNumber
-        args.toAccountNumber = toAccountNumber
+        args.fromAccount = fromAccount
+        args.toAccount = toAccount
         args.amount = amount
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
@@ -111,7 +111,7 @@ class Processor(Iface, TProcessor):
     def __init__(self, handler):
         self._handler = handler
         self._processMap = {}
-        self._processMap["getAccountInformation"] = Processor.process_getAccountInformation
+        self._processMap["getBalance"] = Processor.process_getBalance
         self._processMap["transferMoney"] = Processor.process_transferMoney
 
     def process(self, iprot, oprot):
@@ -129,13 +129,13 @@ class Processor(Iface, TProcessor):
             self._processMap[name](self, seqid, iprot, oprot)
         return True
 
-    def process_getAccountInformation(self, seqid, iprot, oprot):
-        args = getAccountInformation_args()
+    def process_getBalance(self, seqid, iprot, oprot):
+        args = getBalance_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = getAccountInformation_result()
+        result = getBalance_result()
         try:
-            result.success = self._handler.getAccountInformation(args.customerId)
+            result.success = self._handler.getBalance(args.accountNumber)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -143,7 +143,7 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("getAccountInformation", msg_type, seqid)
+        oprot.writeMessageBegin("getBalance", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -154,7 +154,7 @@ class Processor(Iface, TProcessor):
         iprot.readMessageEnd()
         result = transferMoney_result()
         try:
-            result.success = self._handler.transferMoney(args.fromAccountNumber, args.toAccountNumber, args.amount)
+            result.success = self._handler.transferMoney(args.fromAccount, args.toAccount, args.amount)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -170,19 +170,19 @@ class Processor(Iface, TProcessor):
 # HELPER FUNCTIONS AND STRUCTURES
 
 
-class getAccountInformation_args(object):
+class getBalance_args(object):
     """
     Attributes:
-     - customerId
+     - accountNumber
     """
 
     thrift_spec = (
         None,  # 0
-        (1, TType.STRING, 'customerId', 'UTF8', None, ),  # 1
+        (1, TType.STRING, 'accountNumber', 'UTF8', None, ),  # 1
     )
 
-    def __init__(self, customerId=None,):
-        self.customerId = customerId
+    def __init__(self, accountNumber=None,):
+        self.accountNumber = accountNumber
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -195,7 +195,7 @@ class getAccountInformation_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.customerId = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                    self.accountNumber = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -207,10 +207,10 @@ class getAccountInformation_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('getAccountInformation_args')
-        if self.customerId is not None:
-            oprot.writeFieldBegin('customerId', TType.STRING, 1)
-            oprot.writeString(self.customerId.encode('utf-8') if sys.version_info[0] == 2 else self.customerId)
+        oprot.writeStructBegin('getBalance_args')
+        if self.accountNumber is not None:
+            oprot.writeFieldBegin('accountNumber', TType.STRING, 1)
+            oprot.writeString(self.accountNumber.encode('utf-8') if sys.version_info[0] == 2 else self.accountNumber)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -230,7 +230,7 @@ class getAccountInformation_args(object):
         return not (self == other)
 
 
-class getAccountInformation_result(object):
+class getBalance_result(object):
     """
     Attributes:
      - success
@@ -266,7 +266,7 @@ class getAccountInformation_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('getAccountInformation_result')
+        oprot.writeStructBegin('getBalance_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.STRING, 0)
             oprot.writeString(self.success.encode('utf-8') if sys.version_info[0] == 2 else self.success)
@@ -292,21 +292,21 @@ class getAccountInformation_result(object):
 class transferMoney_args(object):
     """
     Attributes:
-     - fromAccountNumber
-     - toAccountNumber
+     - fromAccount
+     - toAccount
      - amount
     """
 
     thrift_spec = (
         None,  # 0
-        (1, TType.STRING, 'fromAccountNumber', 'UTF8', None, ),  # 1
-        (2, TType.STRING, 'toAccountNumber', 'UTF8', None, ),  # 2
-        (3, TType.I16, 'amount', None, None, ),  # 3
+        (1, TType.STRING, 'fromAccount', 'UTF8', None, ),  # 1
+        (2, TType.STRING, 'toAccount', 'UTF8', None, ),  # 2
+        (3, TType.STRING, 'amount', 'UTF8', None, ),  # 3
     )
 
-    def __init__(self, fromAccountNumber=None, toAccountNumber=None, amount=None,):
-        self.fromAccountNumber = fromAccountNumber
-        self.toAccountNumber = toAccountNumber
+    def __init__(self, fromAccount=None, toAccount=None, amount=None,):
+        self.fromAccount = fromAccount
+        self.toAccount = toAccount
         self.amount = amount
 
     def read(self, iprot):
@@ -320,17 +320,17 @@ class transferMoney_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.fromAccountNumber = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                    self.fromAccount = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.STRING:
-                    self.toAccountNumber = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                    self.toAccount = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
-                if ftype == TType.I16:
-                    self.amount = iprot.readI16()
+                if ftype == TType.STRING:
+                    self.amount = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -343,17 +343,17 @@ class transferMoney_args(object):
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
         oprot.writeStructBegin('transferMoney_args')
-        if self.fromAccountNumber is not None:
-            oprot.writeFieldBegin('fromAccountNumber', TType.STRING, 1)
-            oprot.writeString(self.fromAccountNumber.encode('utf-8') if sys.version_info[0] == 2 else self.fromAccountNumber)
+        if self.fromAccount is not None:
+            oprot.writeFieldBegin('fromAccount', TType.STRING, 1)
+            oprot.writeString(self.fromAccount.encode('utf-8') if sys.version_info[0] == 2 else self.fromAccount)
             oprot.writeFieldEnd()
-        if self.toAccountNumber is not None:
-            oprot.writeFieldBegin('toAccountNumber', TType.STRING, 2)
-            oprot.writeString(self.toAccountNumber.encode('utf-8') if sys.version_info[0] == 2 else self.toAccountNumber)
+        if self.toAccount is not None:
+            oprot.writeFieldBegin('toAccount', TType.STRING, 2)
+            oprot.writeString(self.toAccount.encode('utf-8') if sys.version_info[0] == 2 else self.toAccount)
             oprot.writeFieldEnd()
         if self.amount is not None:
-            oprot.writeFieldBegin('amount', TType.I16, 3)
-            oprot.writeI16(self.amount)
+            oprot.writeFieldBegin('amount', TType.STRING, 3)
+            oprot.writeString(self.amount.encode('utf-8') if sys.version_info[0] == 2 else self.amount)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -380,7 +380,7 @@ class transferMoney_result(object):
     """
 
     thrift_spec = (
-        (0, TType.STRING, 'success', 'UTF8', None, ),  # 0
+        (0, TType.BOOL, 'success', None, None, ),  # 0
     )
 
     def __init__(self, success=None,):
@@ -396,8 +396,8 @@ class transferMoney_result(object):
             if ftype == TType.STOP:
                 break
             if fid == 0:
-                if ftype == TType.STRING:
-                    self.success = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                if ftype == TType.BOOL:
+                    self.success = iprot.readBool()
                 else:
                     iprot.skip(ftype)
             else:
@@ -411,8 +411,8 @@ class transferMoney_result(object):
             return
         oprot.writeStructBegin('transferMoney_result')
         if self.success is not None:
-            oprot.writeFieldBegin('success', TType.STRING, 0)
-            oprot.writeString(self.success.encode('utf-8') if sys.version_info[0] == 2 else self.success)
+            oprot.writeFieldBegin('success', TType.BOOL, 0)
+            oprot.writeBool(self.success)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
