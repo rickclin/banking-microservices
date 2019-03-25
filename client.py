@@ -1,91 +1,90 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys
 sys.path.append('gen-py')
 
-from bank import HelloworldService, AuthenticateService, CardManagement, CustomerInformation
+# Importe defined microservice handlers
+from bank import AuthenticateService  # 19092
+AUTH_SERVER_PORT = ('localhost', 19092)
+from bank import CardManagement       # 19093
+CARD_SERVER_PORT = ('localhost', 19093)
+from bank import CustomerInformation  # 19094
+CUST_SERVER_PORT = ('localhost', 19094)
+from bank import OnlineBanking        # 19103
+OLBK_SERVER_PORT = ('localhost', 19103)
 
-from thrift import Thrift
+from thrift           import Thrift
 from thrift.transport import TSocket
 from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
+from thrift.protocol  import TBinaryProtocol
 
 import time
 import getpass
+import os
+
+def createConnection(port, server):
+  transport = TSocket.TSocket('localhost', port)
+  transport = TTransport.TBufferedTransport(transport)
+  protocol = TBinaryProtocol.TBinaryProtocol(transport)
+  client = server.Client(protocol)
+  transport.open()
+  return client, transport
+
+def print_intro():
+  print("   ___        _ _              ____              _    _             ") 
+  print("  / _ \ _ __ | (_)_ __   ___  | __ )  __ _ _ __ | | _(_)_ __   __ _ ") 
+  print(" | | | | '_ \| | | '_ \ / _ \ |  _ \ / _` | '_ \| |/ / | '_ \ / _` |")
+  print(" | |_| | | | | | | | | |  __/ | |_) | (_| | | | |   <| | | | | (_| |")
+  print("  \___/|_| |_|_|_|_| |_|\___| |____/ \__,_|_| |_|_|\_\_|_| |_|\__, |")
+  print("                                               By Cornell SAIL|___/ ")
+  print("")
+  print("")
 
 def main():
-  # Make socket
-  transport = TSocket.TSocket('localhost', 19090)
-  transportAuth = TSocket.TSocket('localhost', 19092)
-  transportCard = TSocket.TSocket('localhost', 19093)
-  transportCustomer = TSocket.TSocket('localhost', 19094)
-
-  # Buffering is critical. Raw sockets are very slow
-  transport = TTransport.TBufferedTransport(transport)
-  transportAuth = TTransport.TBufferedTransport(transportAuth)
-  transportCard = TTransport.TBufferedTransport(transportCard)
-  transportCustomer = TTransport.TBufferedTransport(transportCustomer)
-
-  # Wrap in a protocol
-  protocol = TBinaryProtocol.TBinaryProtocol(transport)
-  protocolAuth = TBinaryProtocol.TBinaryProtocol(transportAuth)
-  protocolCard = TBinaryProtocol.TBinaryProtocol(transportCard)
-  protocolCustomer = TBinaryProtocol.TBinaryProtocol(transportCustomer)
-
-  # Create a client to use the protocol encoder
-  client = HelloworldService.Client(protocol)
-  clientAuth = AuthenticateService.Client(protocolAuth)
-  clientCard = CardManagement.Client(protocolCard)
-  clientCustomer = CustomerInformation.Client(protocolCustomer)
-
-  # Connect!
-  transport.open()
-  transportAuth.open()
-  transportCard.open()
-  transportCustomer.open()
-  print("connections opened!")
   
-  # verify servers are up
-  res = client.getHelloworld()
-  print(res)
+  #clientOnlineBanking,      transportOnlineBanking      = createConnection(OLBK_SERVER_PORT[0], OLBK_SERVER_PORT[1], OnlineBanking)
 
-  # username: ricklin; password: password
-  username = raw_input('username: ')
-  password = getpass.getpass('password: ')
-  auth = clientAuth.authenticate(username, password)
-  login = False
+  #print("connections opened!")
+ 
+  session_active      = False
+  session_customerId  = ''
 
-  if auth:
-    print("successfully authenticated!")
-    login = True
-    print("logged in as " + username)
-  else:
-    print("authentication failed!")
+  while True:
+    while not session_active:
+      os.system('clear')
+      print_intro()
+      # username: ricklin; password: password
+      username = input(          'username: ')
+      password = getpass.getpass('password: ')
+      clientUserAuthentication, transportUserAuthentication = \
+        createConnection(AUTH_SERVER_PORT[1], AuthenticateService)
+      session_active = clientUserAuthentication.authenticate(username, password)
+      transportUserAuthentication.close()
 
-  while login:
-    card = clientCard.getCardNumber()
-    opt = raw_input("1: authorize payment; 2: get history; 3: get contact; 4: get products; 5: log out ----  ")
-    if int(opt) == 1:
-      amount = float(raw_input("enter payment amount: "))
-      print(clientCard.authorizePayment(card, amount))
-    elif int(opt) == 2:
-      history = clientCard.getTransactionHistory(card)
-      for entry in history:
-        print(entry)
-    elif int(opt) == 3:
-      info = clientCustomer.getContactInformation(username)
-      print username + " can be reached at " + info['number'] + " or " + info['address']
-    elif int(opt) == 4:
-      products = clientCustomer.getRegisteredProducts(username)
-      print "the following products are activated by " + username
-      for product in products:
-        print(product)
-    elif int(opt) == 5:
-      login = False
+      if session_active:
+        session_customerId = username
+        input("Logged in as " + username)
+      else:
+        input("Incorrect username or password. Please try again!")
+      
+    while session_active:
+      os.system('clear')
+      opt = input("1: Credit Cards; 2: Personal Information; 3: Accounts 4: Log out ---> ")
+      if   int(opt) == 1: pass
+        clientCustomerInformation,transportCustomerInformation= \
+          createConnection(CUST_SERVER_PORT[0], CUST_SERVER_PORT[1], CustomerInformation)
+        cards = clientCustomerInformation.getRegisteredProducts(session_customerId).['cards']
 
-  transport.close()
-  transportAuth.close()
-  transportCard.close()
-  transportCustomer.close()
+
+      clientCardManagement,     transportCardManagement     = \
+        createConnection(CARD_SERVER_PORT[0], CARD_SERVER_PORT[1], CardManagement)
+      
+      elif int(opt) == 2: pass
+        
+      elif int(opt) == 3: pass
+        
+      elif int(opt) == 4:
+        session_active = False
+        session_customerId = ''
 
 if __name__ == '__main__':
   try:

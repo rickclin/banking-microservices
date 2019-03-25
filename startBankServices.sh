@@ -8,10 +8,9 @@ echo '[localhost:19090] Starting HelloworldServer...'
 python3 HelloworldServer.py &
 #echo ''
 
-# echo 'Starting AuthServer...'
-# python3 AuthServer.py &
-# #echo ''
-# 
+echo '[localhost:19092] Starting AuthServer...'
+python3 AuthServer.py &
+#echo ''
 
 echo '[localhost:19093] Starting CardManagementServer...'
 python3 CardManagementServer.py &
