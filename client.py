@@ -20,6 +20,12 @@ from thrift.protocol  import TBinaryProtocol
 import time
 import getpass
 import os
+import atexit
+
+def exit_cleanup():
+  os.system('clear')
+
+atexit.register(exit_cleanup)
 
 def createConnection(port, server):
   transport = TSocket.TSocket('localhost', port)
@@ -40,11 +46,7 @@ def print_intro():
   print("")
 
 def main():
-  
-  #clientOnlineBanking,      transportOnlineBanking      = createConnection(OLBK_SERVER_PORT[0], OLBK_SERVER_PORT[1], OnlineBanking)
 
-  #print("connections opened!")
- 
   session_active      = False
   session_customerId  = ''
 
@@ -68,21 +70,95 @@ def main():
       
     while session_active:
       os.system('clear')
-      opt = input("1: Credit Cards; 2: Personal Information; 3: Accounts 4: Log out ---> ")
-      if   int(opt) == 1: pass
-        clientCustomerInformation,transportCustomerInformation= \
-          createConnection(CUST_SERVER_PORT[0], CUST_SERVER_PORT[1], CustomerInformation)
-        cards = clientCustomerInformation.getRegisteredProducts(session_customerId).['cards']
-
-
-      clientCardManagement,     transportCardManagement     = \
-        createConnection(CARD_SERVER_PORT[0], CARD_SERVER_PORT[1], CardManagement)
+      print("Welcome back " + username + "!")
+      print("An overview of your accounts")
+      clientCustomerInformation,transportCustomerInformation= \
+        createConnection(CUST_SERVER_PORT[1], CustomerInformation)
+      products = clientCustomerInformation.getRegisteredProducts(session_customerId)
+      transportCustomerInformation.close()
       
-      elif int(opt) == 2: pass
-        
-      elif int(opt) == 3: pass
-        
-      elif int(opt) == 4:
+      clientOnlineBanking,      transportOnlineBanking      = \
+        createConnection(OLBK_SERVER_PORT[1], OnlineBanking)
+      
+      print("--------------------------------------------- Update Personal Information (1)")
+      
+      for account in products["accounts"]:
+        print("Account {:>16} $ {:>20,.02f}".format(account, float(clientOnlineBanking.getBalance(account))))
+
+      print("------------------------------------------------------------ More Actions (2)")
+      
+      for card in products["cards"]:
+        print("Card    {:>16} $ {:>20,.02f}".format(card, float(clientOnlineBanking.getBalance(card))))
+     
+      transportOnlineBanking.close()
+      print("------------------------------------------------------------ More Actions (3)")
+      print("----------------------------------------------------------------- Log Out (X)")
+      print("")
+      opt = input("Action ------------------------------------------------------------------> ")
+
+      if opt == '1':
+        pass
+      elif opt == '2':
+        os.system('clear')
+        clientOnlineBanking,      transportOnlineBanking      = \
+          createConnection(OLBK_SERVER_PORT[1], OnlineBanking)
+
+        print("Select an account -----------------------------------------------------------")
+        i = 1
+        for account in products["accounts"]:
+          print("({}) {:>16} $ {:>20,.02f}".format(i, account, float(clientOnlineBanking.getBalance(account))))
+          i+= 1
+
+        print("-----------------------------------------------------------------------------")
+        print("")
+        transportOnlineBanking.close()
+        account_sel = input("Action ------------------------------------------------------------------> ")
+        os.system('clear')
+        clientOnlineBanking,      transportOnlineBanking      = \
+          createConnection(OLBK_SERVER_PORT[1], OnlineBanking)       
+        print("-----------------------------------------------------------------------------")
+        print("({}) {:>16} $ {:>20,.02f}".format(i, products["accounts"][int(account_sel)], float(clientOnlineBanking.getBalance(products["accounts"][int(account_sel)-1]))))
+        print("----------------------------------------------------------- Make Transfer (1)")
+        print("")
+        transportOnlineBanking.close()
+        transfer = input("Action ------------------------------------------------------------------> ")
+        if transfer == '1':
+          os.system('clear')
+          clientOnlineBanking,      transportOnlineBanking      = \
+            createConnection(OLBK_SERVER_PORT[1], OnlineBanking)
+          print("Transfer from account {:>16} to account -------------------------".format(products["accounts"][int(account_sel)-1]))
+          i = 1
+          for account in products["accounts"]:
+            print("({}) {:>16} $ {:>20,.02f}".format(i, account, float(clientOnlineBanking.getBalance(account))))
+            i+= 1
+
+          print("-----------------------------------------------------------------------------")
+          print("")
+          transportOnlineBanking.close()
+          transfer_to = input("Account -----------------------------------------------------------------> ")
+          amount      = input("Amount  -----------------------------------------------------------------> ")
+          clientOnlineBanking,      transportOnlineBanking      = \
+            createConnection(OLBK_SERVER_PORT[1], OnlineBanking)
+          clientOnlineBanking.transferMoney(products["accounts"][int(account_sel)-1], products["accounts"][int(transfer_to)-1], float(amount))
+          transportOnlineBanking.close() 
+
+      elif opt == '3':
+        os.system('clear')
+        clientOnlineBanking,      transportOnlineBanking      = \
+          createConnection(OLBK_SERVER_PORT[1], OnlineBanking)
+
+        print("Select a card ---------------------------------------------------------------")
+        i = 1
+        for card in products["cards"]:
+          print("({}) {:>16} $ {:>20,.02f}".format(i, account, float(clientOnlineBanking.getBalance(card))))
+          i+= 1
+
+        print("-----------------------------------------------------------------------------")
+        print("")
+        card_sel = input("Action ------------------------------------------------------------------> ")
+        transportOnlineBanking.close()
+
+      elif opt == 'X':
         session_active = False
         session_customerId = ''
 

@@ -15,7 +15,12 @@ from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
 SERVER_PORT = ('localhost', 19106)
-ACCOUNT_BALANCE = {'accountNumber': 'balance', '0000000000000000': 50.00}
+ACCOUNT_BALANCE = {'accountNumber': 'balance', 
+                   '0000000000000000': 50.00,
+                   '4414098724561099': 958.32,
+                   '4414098707079243': 42.87,
+                   '5563219190'      : 1856.14,
+                   '3721108094'      : 801500.00}
 
 class AccountInformationDBHandler:
     def __init__(self):

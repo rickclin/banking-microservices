@@ -17,8 +17,8 @@ from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
 SERVER_PORT = ('localhost', 19102)
-CUSTOMER_CARDS = {'customerId':['number']}
-CUSTOMER_ACCOUNTS = {'customerId':['number']}
+CUSTOMER_CARDS = {'customerId':['number'], 'ricklin' : ['4414098724561099', '4414098707079243']}
+CUSTOMER_ACCOUNTS = {'customerId':['number'], 'ricklin' : ['5563219190', '3721108094']}
 
 class RegisteredProductsDBHandler:
     def __init__(self):
