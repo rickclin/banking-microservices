@@ -14,7 +14,7 @@ from thrift.server    import TServer
 import datetime
 import string
 
-SERVER_PORT = ('localhost', 19095)
+SERVER_PORT = ('0.0.0.0', 9090)
 
 class TransactionHistoryHandler:
     def __init__(self):
@@ -23,22 +23,22 @@ class TransactionHistoryHandler:
     def ping(self):
         print('ping()')
     
-    def createConnection(self, port, server):
-        transport = TSocket.TSocket('localhost', port)
-        transport = TTransport.TBufferedTransport(transport)
+    def createConnection(self, container, server):
+        transport = TSocket.TSocket(container, 9090)
+        transport = TTransport.TFramedTransport(transport)
         protocol = TBinaryProtocol.TBinaryProtocol(transport)
         client = server.Client(protocol)
         transport.open()
         return client, transport
 
     def getTransactionLog(self, cardNumber):
-      clientTransactionDB, transportTransactionDB = self.createConnection(19097, TransactionHistoryDB)
+      clientTransactionDB, transportTransactionDB = self.createConnection('transaction-history-db', TransactionHistoryDB)
       log = clientTransactionDB.getTransactionLog(cardNumber)
       transportTransactionDB.close()
       return log
 
     def filterTransactions(self, cardNumber, numOfResults, dateRange, amountRange, entryMode, description):
-      clientTransactionDB, transportTransactionDB = self.createConnection(19097, TransactionHistoryDB)
+      clientTransactionDB, transportTransactionDB = self.createConnection('transaction-history-db', TransactionHistoryDB)
       log = clientTransactionDB.getTransactionLog(cardNumber)
       transportTransactionDB.close()
       output = []
@@ -68,7 +68,7 @@ class TransactionHistoryHandler:
       return output[:int(numOfResults)] if numOfResults > 0 else output
 
     def insertTransaction(self, cardNumber, amount, entryMode, description):
-      clientTransactionDB, transportTransactionDB = self.createConnection(19097, TransactionHistoryDB)
+      clientTransactionDB, transportTransactionDB = self.createConnection('transaction-history-db', TransactionHistoryDB)
       ack = clientTransactionDB.insertTransaction(cardNumber, amount, entryMode, description)
       transportTransactionDB.close()
       return ack
@@ -78,9 +78,9 @@ if __name__ == '__main__':
     handler = TransactionHistoryHandler()
     processor = TransactionHistory.Processor(handler)
     transport = TSocket.TServerSocket(host=SERVER_PORT[0], port=SERVER_PORT[1])
-    tfactory = TTransport.TBufferedTransportFactory()
+    tfactory = TTransport.TFramedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
 
     print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + '] Starting the TransactionHistoryServer...')
     server.serve()

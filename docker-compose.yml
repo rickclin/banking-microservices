@@ -1,0 +1,187 @@
+version: '3'
+services:
+
+  authenticate-service:
+    image: cl2545/banking-microservices
+    hostname: authenticate-service
+    ports:
+      - 19092:9090
+    restart: always
+    volumes:
+      - ./AuthServer.py:/AuthServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /AuthServer.py
+
+  card-management:
+    image: cl2545/banking-microservices
+    hostname: card-management
+    ports:
+      - 19093:9090
+    restart: always
+    volumes:
+      - ./CardManagementServer.py:/CardManagementServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /CardManagementServer.py
+
+  transaction-history:
+    image: cl2545/banking-microservices
+    hostname: transaction-history
+    ports:
+      - 19095:9090
+    restart: always
+    volumes:
+      - ./TransactionHistoryServer.py:/TransactionHistoryServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /TransactionHistoryServer.py
+
+  transaction-history-db:
+    image: cl2545/banking-microservices
+    hostname: transaction-history-db
+    ports:
+      - 19097:9090
+    restart: always
+    volumes:
+      - ./TransactionHistoryDBServer.py:/TransactionHistoryDBServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /TransactionHistoryDBServer.py
+
+  payment-authorization-db:
+    image: cl2545/banking-microservices
+    hostname: payment-authorization-db
+    ports:
+      - 19098:9090
+    restart: always
+    volumes:
+      - ./PaymentAuthorizationDBServer.py:/PaymentAuthorizationDBServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /PaymentAuthorizationDBServer.py
+ 
+  payment-authorization:
+    image: cl2545/banking-microservices
+    hostname: payment-authorization
+    ports:
+      - 19096:9090
+    restart: always
+    volumes:
+      - ./PaymentAuthorizationServer.py:/PaymentAuthorizationServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /PaymentAuthorizationServer.py
+  
+  customer-information:
+    image: cl2545/banking-microservices
+    hostname: customer-information
+    ports:
+      - 19094:9090
+    restart: always
+    volumes:
+      - ./CustomerInformationServer.py:/CustomerInformationServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /CustomerInformationServer.py
+ 
+  contact-information:
+    image: cl2545/banking-microservices
+    hostname: contact-information
+    ports:
+      - 19099:9090
+    restart: always
+    volumes:
+      - ./ContactInformationServer.py:/ContactInformationServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /ContactInformationServer.py
+ 
+  contact-information-db:
+    image: cl2545/banking-microservices
+    hostname: contact-information-db
+    ports:
+      - 19101:9090
+    restart: always
+    volumes:
+      - ./ContactInformationDBServer.py:/ContactInformationDBServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /ContactInformationDBServer.py
+ 
+  registered-products:
+    image: cl2545/banking-microservices
+    hostname: registered-products
+    ports:
+      - 19100:9090
+    restart: always
+    volumes:
+      - ./RegisteredProductsServer.py:/RegisteredProductsServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /RegisteredProductsServer.py
+ 
+  registered-products-db:
+    image: cl2545/banking-microservices
+    hostname: registered-products-db
+    ports:
+      - 19102:9090
+    restart: always
+    volumes:
+      - ./RegisteredProductsDBServer.py:/RegisteredProductsDBServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /RegisteredProductsDBServer.py
+    
+  online-banking:
+    image: cl2545/banking-microservices
+    hostname: online-banking
+    ports:
+      - 19103:9090
+    restart: always
+    volumes:
+      - ./OnlineBankingServer.py:/OnlineBankingServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /OnlineBankingServer.py
+   
+  account-information:
+    image: cl2545/banking-microservices
+    hostname: account-information
+    ports:
+      - 19104:9090
+    restart: always
+    volumes:
+      - ./AccountInformationServer.py:/AccountInformationServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /AccountInformationServer.py
+  
+  account-information-db:
+    image: cl2545/banking-microservices
+    hostname: account-information-db
+    ports:
+      - 19106:9090
+    restart: always
+    volumes:
+      - ./AccountInformationDBServer.py:/AccountInformationDBServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /AccountInformationDBServer.py
+   
+  money-transfer:
+    image: cl2545/banking-microservices
+    hostname: money-transfer
+    ports:
+      - 19105:9090
+    restart: always
+    volumes:
+      - ./MoneyTransferServer.py:/MoneyTransferServer.py
+      - ./gen-py:/gen-py
+    entrypoint: python3 /MoneyTransferServer.py
+  
+  # DNS server for testing purposes: maps container names to addresses
+  # REMEMBER TO DISABLE IT AFTER USE -- WILL MESS UP LOCAL DNS MAPPING
+  dns-banking:
+     image: defreitas/dns-proxy-server
+     volumes:
+       - /opt/dns-proxy-server/conf:/app/conf
+       - /var/run/docker.sock:/var/run/docker.sock
+       - /etc/resolv.conf:/etc/resolv.conf
+
+  nginx-thrift:
+    image: yg397/openresty-thrift:xenial
+    hostname: nginx-thrift
+    ports:
+      - 8080:8080
+    restart: always
+    volumes:
+      - ./nginx-lua/lua-scripts:/usr/local/openresty/nginx/lua-scripts
+      - ./nginx-lua/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./gen-lua:/gen-lua

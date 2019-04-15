@@ -12,7 +12,7 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
-SERVER_PORT = ('localhost', 19094)
+SERVER_PORT = ('0.0.0.0', 9090)
 
 class CustomerInformationHandler:
     def __init__(self):
@@ -21,28 +21,28 @@ class CustomerInformationHandler:
     def ping(self):
         print('ping()')
 
-    def createConnection(self, port, server):
-      transport = TSocket.TSocket('localhost', port)
-      transport = TTransport.TBufferedTransport(transport)
+    def createConnection(self, container, server):
+      transport = TSocket.TSocket(container, 9090)
+      transport = TTransport.TFramedTransport(transport)
       protocol = TBinaryProtocol.TBinaryProtocol(transport)
       client = server.Client(protocol)
       transport.open()
       return client, transport
 
     def retrieveContactInformation(self, customerId):
-      clientContact, transportContact = self.createConnection(19099, ContactInformation)
+      clientContact, transportContact = self.createConnection('contact-information', ContactInformation)
       contact = clientContact.retrieveCustomer(customerId)
       transportContact.close()
       return contact
 
     def updateContactInformation(self, customerId, revisedInfo):
-      clientContact, transportContact = self.createConnection(19099, ContactInformation)
+      clientContact, transportContact = self.createConnection('contact-information', ContactInformation)
       ack = clientContact.updateContactInformation(customerId, revisedInfo)
       transportContact.close()
       return ack
 
     def verifyContactInformation(self, customerId, field, answer):
-      clientContact, transportContact = self.createConnection(19099, ContactInformation)
+      clientContact, transportContact = self.createConnection('contact-information', ContactInformation)
       contact =  clientContact.retrieveCustomer(customerId)
       transportContact.close()
       if contact[field] == answer:
@@ -51,7 +51,7 @@ class CustomerInformationHandler:
         return False
 
     def getRegisteredProducts(self, customerId):
-      clientProducts, transportProducts = self.createConnection(19100, RegisteredProducts)
+      clientProducts, transportProducts = self.createConnection('registered-products', RegisteredProducts)
       products = clientProducts.getRegisteredProducts(customerId)
       transportProducts.close()
       return products
@@ -67,13 +67,13 @@ class CustomerInformationHandler:
       return cards
 
     def newAccount(self, customerId):
-      clientProducts, transportProducts = self.createConnection(19100, RegisteredProducts)
+      clientProducts, transportProducts = self.createConnection('registered-products', RegisteredProducts)
       newAccountNumber = clientProducts.addAccount(customerId)
       transportProducts.close()
       return newAccountNumber
    
     def newCard(self, customerId):
-      clientProducts, transportProducts = self.createConnection(19100, RegisteredProducts)
+      clientProducts, transportProducts = self.createConnection('registered-products', RegisteredProducts)
       newCardNumber = clientProducts.addCard(customerId)
       transportProducts.close()
       return newCardNumber
@@ -82,10 +82,10 @@ if __name__ == '__main__':
     handler = CustomerInformationHandler()
     processor = CustomerInformation.Processor(handler)
     transport = TSocket.TServerSocket(host=SERVER_PORT[0], port=SERVER_PORT[1])
-    tfactory = TTransport.TBufferedTransportFactory()
+    tfactory = TTransport.TFramedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
 
     # You could do one of these for a multithreaded server
     # server = TServer.TThreadedServer(

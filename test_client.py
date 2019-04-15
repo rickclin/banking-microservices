@@ -41,30 +41,29 @@ import getpass
 import random
 import string
 
-def createConnection(port, service):
-    transport = TSocket.TSocket('localhost', port)
-    transport = TTransport.TBufferedTransport(transport)
+def createConnection(container, service):
+    transport = TSocket.TSocket(container, 9090)
+    transport = TTransport.TFramedTransport(transport)
     protocol = TBinaryProtocol.TBinaryProtocol(transport)
     client = service.Client(protocol)
     transport.open()
     return client, transport
 
-
 def main():
   # Make socket
-  client,         transport         = createConnection(19090, HelloworldService) 
-  print("connections opened!")  
+  #client,         transport         = createConnection(19090, HelloworldService) 
+  #print("connections opened!")  
   # verify servers are up
-  res = client.getHelloworld()
-  print(res)
-  transport.close() 
+  #res = client.getHelloworld()
+  #print(res)
+  #transport.close() 
 
   if TEST_CARD_MANAGEMENT:
-    clientCard,     transportCard     = createConnection(19093, CardManagement) 
-    clientAuth,     transportAuth     = createConnection(19096, PaymentAuthorization) 
-    clientAuthDB,   transportAuthDB   = createConnection(19098, PaymentAuthorizationDB) 
-    clientTranx,    transportTranx    = createConnection(19095, TransactionHistory) 
-    clientTranxDB,  transportTranxDB  = createConnection(19097, TransactionHistoryDB)
+    clientCard,     transportCard     = createConnection('card-management',          CardManagement) 
+    clientAuth,     transportAuth     = createConnection('payment-authorization',    PaymentAuthorization) 
+    clientAuthDB,   transportAuthDB   = createConnection('payment-authorization-db', PaymentAuthorizationDB) 
+    clientTranx,    transportTranx    = createConnection('transaction-history',      TransactionHistory) 
+    clientTranxDB,  transportTranxDB  = createConnection('transaction-history-db',   TransactionHistoryDB)
 
     # communicating with Payment Authorization DB server
     print('[TEST] Payment Authorization DB Server')
@@ -90,6 +89,7 @@ def main():
     assert clientAuth.authorize     ('0000000000000000', 499.99) == True
     assert clientAuth.authorize     ('0000000000000000', 500.01) == True
     assert clientAuth.authorize     ('9999000000001234', 500.01) == False
+    print('[TEST] Payment Authorization Server successfully tested!')
     transportAuth.close()
     input('[PAUSE] Press Return to continue...')
 
@@ -205,11 +205,11 @@ def main():
     transportCard.close()
   
   if TEST_CUSTOMER_INFORMATION:
-    clientProdDB,   transportProdDB   = createConnection(19102, RegisteredProductsDB)
-    clientProd,     transportProd     = createConnection(19100, RegisteredProducts)
-    clientContactDB,transportContactDB= createConnection(19101, ContactInformationDB)
-    clientContact,  transportContact  = createConnection(19099, ContactInformation)
-    clientCustomer, transportCustomer = createConnection(19094, CustomerInformation)
+    clientProdDB,   transportProdDB   = createConnection('registered-products-db', RegisteredProductsDB)
+    clientProd,     transportProd     = createConnection('registered-products',    RegisteredProducts)
+    clientContactDB,transportContactDB= createConnection('contact-information-db', ContactInformationDB)
+    clientContact,  transportContact  = createConnection('contact-information',    ContactInformation)
+    clientCustomer, transportCustomer = createConnection('customer-information',   CustomerInformation)
 
     # communicating with Registered Products DB Server
     print('[TEST] inserting new cards into the DB')
@@ -344,10 +344,10 @@ def main():
     transportCustomer.close()
 
   if TEST_ONLINE_BANKING:
-    clientAcctInfoDB, transportAcctInfoDB   = createConnection(19106, AccountInformationDB)
-    clientAcctInfo,   transportAcctInfo     = createConnection(19104, AccountInformation)
-    clientMoneyTx,    transportMoneyTx      = createConnection(19105, MoneyTransfer)
-    clientOnlineBank, transportOnlineBank   = createConnection(19103, OnlineBanking)
+    clientAcctInfoDB, transportAcctInfoDB   = createConnection('account-information-db', AccountInformationDB)
+    clientAcctInfo,   transportAcctInfo     = createConnection('account-information',    AccountInformation)
+    clientMoneyTx,    transportMoneyTx      = createConnection('money-transfer',         MoneyTransfer)
+    clientOnlineBank, transportOnlineBank   = createConnection('online-banking',         OnlineBanking)
 
     print('[TEST] Testing account information simulated DB')
     print('[TEST] Getting the balance of card account ending in 0000')

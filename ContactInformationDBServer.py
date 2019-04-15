@@ -16,7 +16,7 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
-SERVER_PORT = ('localhost', 19101)
+SERVER_PORT = ('0.0.0.0', 9090)
 FIRST =   {'customerId':'firstName'}
 LAST =    {'customerId':'lastName'}
 HOME =    {'customerId':'homeNumber'}
@@ -59,10 +59,10 @@ if __name__ == '__main__':
     handler = ContactInformationDBHandler()
     processor = ContactInformationDB.Processor(handler)
     transport = TSocket.TServerSocket(host=SERVER_PORT[0], port=SERVER_PORT[1])
-    tfactory = TTransport.TBufferedTransportFactory()
+    tfactory = TTransport.TFramedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
 
     print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + ']' + ' Starting the ContactInformationDBServer...')
     server.serve()

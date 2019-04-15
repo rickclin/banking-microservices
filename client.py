@@ -29,7 +29,7 @@ atexit.register(exit_cleanup)
 
 def createConnection(port, server):
   transport = TSocket.TSocket('localhost', port)
-  transport = TTransport.TBufferedTransport(transport)
+  transport = TTransport.TFramedTransport(transport)
   protocol = TBinaryProtocol.TBinaryProtocol(transport)
   client = server.Client(protocol)
   transport.open()

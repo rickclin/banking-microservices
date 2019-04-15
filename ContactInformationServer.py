@@ -16,7 +16,7 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
-SERVER_PORT = ('localhost', 19099)
+SERVER_PORT = ('0.0.0.0', 9090)
 
 class ContactInformationHandler:
     def __init__(self):
@@ -25,21 +25,21 @@ class ContactInformationHandler:
     def ping(self):
         print('ping()')
 
-    def createConnection(self, port, server):
-        transport = TSocket.TSocket('localhost', port)
-        transport = TTransport.TBufferedTransport(transport)
+    def createConnection(self, container, server):
+        transport = TSocket.TSocket(container, 9090)
+        transport = TTransport.TFramedTransport(transport)
         protocol = TBinaryProtocol.TBinaryProtocol(transport)
         client = server.Client(protocol)
         transport.open()
         return client, transport
 
     def retrieveCustomer(self, customerId):
-      clientContactDB, transportContactDB = self.createConnection(19101, ContactInformationDB)
+      clientContactDB, transportContactDB = self.createConnection('contact-information-db', ContactInformationDB)
       contact = clientContactDB.retrieveCustomer(customerId)
       return contact
 
     def updateContactInformation(self, customerId, revisedInfo):
-      clientContactDB, transportContactDB = self.createConnection(19101, ContactInformationDB)
+      clientContactDB, transportContactDB = self.createConnection('contact-information-db', ContactInformationDB)
       ack = clientContactDB.updateContactInformation(customerId, revisedInfo)
       return ack
 
@@ -48,10 +48,10 @@ if __name__ == '__main__':
     handler = ContactInformationHandler()
     processor = ContactInformation.Processor(handler)
     transport = TSocket.TServerSocket(host=SERVER_PORT[0], port=SERVER_PORT[1])
-    tfactory = TTransport.TBufferedTransportFactory()
+    tfactory = TTransport.TFramedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
 
     print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + ']' + ' Starting the ContactInformationServer...')
     server.serve()

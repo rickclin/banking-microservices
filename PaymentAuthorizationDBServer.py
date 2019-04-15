@@ -14,8 +14,8 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
-SERVER_PORT = ('localhost', 19098)
-AUTHORIZATION_RULE = {'cardNumber': 'limit', '0000000000000000': 50.00}
+SERVER_PORT = ('0.0.0.0', 9090)
+AUTHORIZATION_RULE = {'cardNumber': 'limit', '0000000000000000': 50.00, '0000111100001111': 60.00}
 
 class PaymentAuthorizationDBHandler:
     def __init__(self):
@@ -25,10 +25,14 @@ class PaymentAuthorizationDBHandler:
         print('ping()')
 
     def getLimit(self, cardNumber):
+      print('getLimit')
       global AUTHORIZATION_RULE
       if cardNumber in AUTHORIZATION_RULE:
-        return float(AUTHORIZATION_RULE[cardNumber])
+        print(AUTHORIZATION_RULE[cardNumber])
+        return AUTHORIZATION_RULE[cardNumber]
+        #return 50.00
       else:
+        print('hey')
         return 0.00
 
     def changeLimit(self, cardNumber, newAmount):
@@ -50,10 +54,10 @@ if __name__ == '__main__':
     handler = PaymentAuthorizationDBHandler()
     processor = PaymentAuthorizationDB.Processor(handler)
     transport = TSocket.TServerSocket(host=SERVER_PORT[0], port=SERVER_PORT[1])
-    tfactory = TTransport.TBufferedTransportFactory()
+    tfactory = TTransport.TFramedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
 
     print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + ']' + ' Starting the PaymentAuthorizationDBServer...')
     server.serve()

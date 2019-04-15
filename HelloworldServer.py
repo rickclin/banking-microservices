@@ -50,10 +50,10 @@ if __name__ == '__main__':
     handler = HelloworldHandler()
     processor = HelloworldService.Processor(handler)
     transport = TSocket.TServerSocket(host='localhost', port=19090)
-    tfactory = TTransport.TBufferedTransportFactory()
+    tfactory = TTransport.TFramedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
 
     # You could do one of these for a multithreaded server
     # server = TServer.TThreadedServer(

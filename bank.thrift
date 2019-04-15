@@ -1,6 +1,7 @@
 namespace cpp   bank
 namespace py    bank
 namespace java  bank
+namespace lua   bank
 
 service HelloworldService {
   string getHelloworld()
@@ -13,16 +14,16 @@ service AuthenticateService {
 // level-1 service
 service CardManagement {
   
-  string authorizePayment (
-    1: string cardNumber,
-    2: double amount
-  ),
+  // string authorizePayment (
+  //   1: string cardNumber,
+  //   2: double amount
+  // ),
 
-  list<string> getTransactionHistory (
-    1: string cardNumber
-  ),
+  // list<string> getTransactionHistory (
+  //   1: string cardNumber
+  // ),
 
-  string getCardNumbers ( ),
+  // string getCardNumbers ( ),
 
   bool postTransaction (
     1: string cardNumber,

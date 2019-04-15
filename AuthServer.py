@@ -13,7 +13,7 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
-SERVER_PORT = ('localhost', 19092)
+SERVER_PORT = ('0.0.0.0', 9090)
 
 user_db = {'ricklin' : '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8',
            'user'    : 'c73ba2982c55b7ead0e4098a92f722bdb3a3b3d8'
@@ -36,17 +36,11 @@ class AuthenticateHandler:
 if __name__ == '__main__':
     handler = AuthenticateHandler()
     processor = AuthenticateService.Processor(handler)
-    transport = TSocket.TServerSocket(host='localhost', port=19092)
-    tfactory = TTransport.TBufferedTransportFactory()
+    transport = TSocket.TServerSocket(host=SERVER_PORT[0], port=SERVER_PORT[1])
+    tfactory = TTransport.TFramedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
-
-    # You could do one of these for a multithreaded server
-    # server = TServer.TThreadedServer(
-    #     processor, transport, tfactory, pfactory)
-    # server = TServer.TThreadPoolServer(
-    #     processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
 
     print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + '] Starting the AuthServer...')
     server.serve()

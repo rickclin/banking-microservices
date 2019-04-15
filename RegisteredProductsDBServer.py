@@ -16,7 +16,7 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
-SERVER_PORT = ('localhost', 19102)
+SERVER_PORT = ('0.0.0.0', 9090)
 CUSTOMER_CARDS = {'customerId':['number'], 'ricklin' : ['4414098724561099', '4414098707079243']}
 CUSTOMER_ACCOUNTS = {'customerId':['number'], 'ricklin' : ['5563219190', '3721108094']}
 
@@ -68,10 +68,10 @@ if __name__ == '__main__':
     handler = RegisteredProductsDBHandler()
     processor = RegisteredProductsDB.Processor(handler)
     transport = TSocket.TServerSocket(host=SERVER_PORT[0], port=SERVER_PORT[1])
-    tfactory = TTransport.TBufferedTransportFactory()
+    tfactory = TTransport.TFramedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
 
     print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + ']' + ' Starting the RegisteredProductsDBServer...')
     server.serve()

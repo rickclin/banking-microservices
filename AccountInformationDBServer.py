@@ -14,7 +14,7 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
-SERVER_PORT = ('localhost', 19106)
+SERVER_PORT = ('0.0.0.0', 9090)
 ACCOUNT_BALANCE = {'accountNumber': 'balance', 
                    '0000000000000000': 50.00,
                    '4414098724561099': 958.32,
@@ -56,10 +56,10 @@ if __name__ == '__main__':
     handler = AccountInformationDBHandler()
     processor = AccountInformationDB.Processor(handler)
     transport = TSocket.TServerSocket(host=SERVER_PORT[0], port=SERVER_PORT[1])
-    tfactory = TTransport.TBufferedTransportFactory()
+    tfactory = TTransport.TFramedTransportFactory()
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
 
     print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + ']' + ' Starting the AccountInformationDBServer...')
     server.serve()
