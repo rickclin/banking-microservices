@@ -16,43 +16,43 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
+import thriftpy2
+from thriftpy2.rpc              import make_client
+from thriftpy2.protocol.binary  import TBinaryProtocolFactory
+from thriftpy2.transport.framed import TFramedTransportFactory
+import thrift_connector.connection_pool as connection_pool
+bank_thrift = thriftpy2.load("bank.thrift", module_name="bank_thrift")
+
 SERVER_PORT = ('0.0.0.0', 9090)
 
 class MoneyTransferHandler:
     def __init__(self):
         self.log = {}
+        self.AccountInformationClient = connection_pool.ClientPool(
+          bank_thrift.AccountInformation,
+          'account-information', 9090,
+          connection_class=connection_pool.ThriftPyCyClient
+        )
 
     def ping(self):
         print('ping()')
 
-    def createConnection(self, container, server):
-        transport = TSocket.TSocket(container, 9090)
-        transport = TTransport.TFramedTransport(transport)
-        protocol = TBinaryProtocol.TBinaryProtocol(transport)
-        client = server.Client(protocol)
-        transport.open()
-        return client, transport
-
     def transferMoney(self, fromAccount, toAccount, amount):
-      clientAcctInfo, transportAcctInfo = self.createConnection('account-information', AccountInformation)
-      bal_fromAccount = clientAcctInfo.getBalance(fromAccount)
-      bal_toAccount   = clientAcctInfo.getBalance(toAccount)
+      bal_fromAccount = self.AccountInformationClient.getBalance(fromAccount)
+      bal_toAccount   = self.AccountInformationClient.getBalance(toAccount)
       amount = float(amount)
       if bal_fromAccount == 'n/a' or bal_toAccount == 'n/a':
         print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + '] The specified account(s) does not exist!')
-        transportAcctInfo.close()
         return False
       else:
         if amount > float(bal_fromAccount):
           print('[' + SERVER_PORT[0] + ':' + str(SERVER_PORT[1]) + '] Insufficient funds!')
-          transportAcctInfo.close()
           return False
         else:
           bal_fromAccount = float(bal_fromAccount)
           bal_toAccount   = float(bal_toAccount)
-          assert float(clientAcctInfo.updateBalance(fromAccount, str(-1*amount))) == bal_fromAccount - amount
-          assert float(clientAcctInfo.updateBalance(toAccount,   str(amount)))    == bal_toAccount   + amount
-          transportAcctInfo.close()
+          assert float(self.AccountInformationClient.updateBalance(fromAccount, str(-1*amount))) == bal_fromAccount - amount
+          assert float(self.AccountInformationClient.updateBalance(toAccount,   str(amount)))    == bal_toAccount   + amount
           return True
 
 if __name__ == '__main__':

@@ -16,33 +16,33 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
+import thriftpy2
+from thriftpy2.rpc              import make_client
+from thriftpy2.protocol.binary  import TBinaryProtocolFactory
+from thriftpy2.transport.framed import TFramedTransportFactory
+import thrift_connector.connection_pool as connection_pool
+bank_thrift = thriftpy2.load("bank.thrift", module_name="bank_thrift")
+
 SERVER_PORT = ('0.0.0.0', 9090)
 
 class AccountInformationHandler:
     def __init__(self):
         self.log = {}
+        self.AccountInformationDBClient = connection_pool.ClientPool(
+          bank_thrift.AccountInformationDB,
+          'account-information-db', 9090,
+          connection_class=connection_pool.ThriftPyCyClient
+        )
 
     def ping(self):
         print('ping()')
 
-    def createConnection(self, container, server):
-        transport = TSocket.TSocket(container, 9090)
-        transport = TTransport.TFramedTransport(transport)
-        protocol = TBinaryProtocol.TBinaryProtocol(transport)
-        client = server.Client(protocol)
-        transport.open()
-        return client, transport
-
     def getBalance(self, accountNumber):
-      clientAcctInfoDB, transportAcctInfoDB = self.createConnection('account-information-db', AccountInformationDB)
-      balance = clientAcctInfoDB.getBalance(accountNumber)
-      transportAcctInfoDB.close()
+      balance = self.AccountInformationDBClient.getBalance(accountNumber)
       return balance
 
     def updateBalance(self, accountNumber, amount):
-      clientAcctInfoDB, transportAcctInfoDB = self.createConnection('account-information-db', AccountInformationDB)
-      newBalance = clientAcctInfoDB.updateBalance(accountNumber, amount)
-      transportAcctInfoDB.close()
+      newBalance = self.AccountInformationDBClient.updateBalance(accountNumber, amount)
       return newBalance
 
 if __name__ == '__main__':

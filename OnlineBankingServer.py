@@ -12,35 +12,39 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
+import thriftpy2
+from thriftpy2.rpc              import make_client
+from thriftpy2.protocol.binary  import TBinaryProtocolFactory
+from thriftpy2.transport.framed import TFramedTransportFactory
+import thrift_connector.connection_pool as connection_pool
+bank_thrift = thriftpy2.load("bank.thrift", module_name="bank_thrift")
+
 SERVER_PORT = ('0.0.0.0', 9090)
 
 class OnlineBankingHandler:
     def __init__(self):
         self.log = {}
+        self.AccountInformationClient = connection_pool.ClientPool(
+          bank_thrift.AccountInformation,
+          'account-information', 9090,
+          connection_class=connection_pool.ThriftPyCyClient
+        )
+        self.MoneyTransferClient = connection_pool.ClientPool(
+          bank_thrift.MoneyTransfer,
+          'money-transfer', 9090,
+          connection_class=connection_pool.ThriftPyCyClient
+        )
 
     def ping(self):
         print('ping()')
 
-    def createConnection(self, container, server):
-      transport = TSocket.TSocket(container, 9090)
-      transport = TTransport.TFramedTransport(transport)
-      protocol = TBinaryProtocol.TBinaryProtocol(transport)
-      client = server.Client(protocol)
-      transport.open()
-      return client, transport
-
     def getBalance(self, accountNumber):
-      clientAcctInfo, transportAcctInfo = self.createConnection('account-information', AccountInformation)
-      balance = clientAcctInfo.getBalance(accountNumber)
-      transportAcctInfo.close()
+      balance = self.AccountInformationClient.getBalance(accountNumber)
       return balance
 
     def transferMoney(self, fromAccount, toAccount, amount):
-      clientMoneyTx, transportMoneyTx = self.createConnection('money-transfer', MoneyTransfer)
-      ack = clientMoneyTx.transferMoney(fromAccount, toAccount, amount)
-      transportMoneyTx.close()
+      ack = self.MoneyTransferClient.transferMoney(fromAccount, toAccount, amount)
       return ack
-
 
 if __name__ == '__main__':
     handler = OnlineBankingHandler()

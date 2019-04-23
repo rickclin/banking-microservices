@@ -12,48 +12,49 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
+import thriftpy2
+from thriftpy2.rpc              import make_client
+from thriftpy2.protocol.binary  import TBinaryProtocolFactory
+from thriftpy2.transport.framed import TFramedTransportFactory
+import thrift_connector.connection_pool as connection_pool
+bank_thrift = thriftpy2.load("bank.thrift", module_name="bank_thrift")
+
 SERVER_PORT = ('0.0.0.0', 9090)
 
 class CustomerInformationHandler:
     def __init__(self):
         self.log = {}
+        self.ContactInformationClient = connection_pool.ClientPool(
+          bank_thrift.ContactInformation,
+          'contact-information', 9090,
+          connection_class=connection_pool.ThriftPyCyClient
+        )
+        self.RegisteredProductsClient = connection_pool.ClientPool(
+          bank_thrift.RegisteredProducts,
+          'registered-products', 9090,
+          connection_class=connection_pool.ThriftPyCyClient
+        )
 
     def ping(self):
         print('ping()')
 
-    def createConnection(self, container, server):
-      transport = TSocket.TSocket(container, 9090)
-      transport = TTransport.TFramedTransport(transport)
-      protocol = TBinaryProtocol.TBinaryProtocol(transport)
-      client = server.Client(protocol)
-      transport.open()
-      return client, transport
-
     def retrieveContactInformation(self, customerId):
-      clientContact, transportContact = self.createConnection('contact-information', ContactInformation)
-      contact = clientContact.retrieveCustomer(customerId)
-      transportContact.close()
+      contact = self.ContactInformationClient.retrieveCustomer(customerId)
       return contact
 
     def updateContactInformation(self, customerId, revisedInfo):
-      clientContact, transportContact = self.createConnection('contact-information', ContactInformation)
-      ack = clientContact.updateContactInformation(customerId, revisedInfo)
-      transportContact.close()
+      ack = self.ContactInformationClient.updateContactInformation(customerId, revisedInfo)
       return ack
 
     def verifyContactInformation(self, customerId, field, answer):
-      clientContact, transportContact = self.createConnection('contact-information', ContactInformation)
-      contact =  clientContact.retrieveCustomer(customerId)
-      transportContact.close()
+      contact =  self.ContactInformationClient.retrieveCustomer(customerId)
       if contact[field] == answer:
         return True
       else:
         return False
 
     def getRegisteredProducts(self, customerId):
-      clientProducts, transportProducts = self.createConnection('registered-products', RegisteredProducts)
-      products = clientProducts.getRegisteredProducts(customerId)
-      transportProducts.close()
+      products = self.RegisteredProductsClient.getRegisteredProducts(customerId)
       return products
 
     def getAccountNumbers(self, customerId):
@@ -67,15 +68,11 @@ class CustomerInformationHandler:
       return cards
 
     def newAccount(self, customerId):
-      clientProducts, transportProducts = self.createConnection('registered-products', RegisteredProducts)
-      newAccountNumber = clientProducts.addAccount(customerId)
-      transportProducts.close()
+      newAccountNumber = self.RegisteredProductsClient.addAccount(customerId)
       return newAccountNumber
    
     def newCard(self, customerId):
-      clientProducts, transportProducts = self.createConnection('registered-products', RegisteredProducts)
-      newCardNumber = clientProducts.addCard(customerId)
-      transportProducts.close()
+      newCardNumber = self.RegisteredProductsClient.addCard(customerId)
       return newCardNumber
 
 if __name__ == '__main__':

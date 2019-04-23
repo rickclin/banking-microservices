@@ -2,7 +2,7 @@
 # choose which test(s) to run
 
 TEST_CARD_MANAGEMENT      = False
-TEST_CUSTOMER_INFORMATION = False
+TEST_CUSTOMER_INFORMATION = True
 TEST_ONLINE_BANKING       = True
 
 import sys

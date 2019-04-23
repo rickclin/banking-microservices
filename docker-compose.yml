@@ -21,6 +21,8 @@ services:
     volumes:
       - ./CardManagementServer.py:/CardManagementServer.py
       - ./gen-py:/gen-py
+      - ./bank.thrift:/bank.thrift
+      - ./thrift_connector:/thrift_connector
     entrypoint: python3 /CardManagementServer.py
 
   transaction-history:
@@ -32,6 +34,8 @@ services:
     volumes:
       - ./TransactionHistoryServer.py:/TransactionHistoryServer.py
       - ./gen-py:/gen-py
+      - ./bank.thrift:/bank.thrift
+      - ./thrift_connector:/thrift_connector
     entrypoint: python3 /TransactionHistoryServer.py
 
   transaction-history-db:
@@ -45,6 +49,19 @@ services:
       - ./gen-py:/gen-py
     entrypoint: python3 /TransactionHistoryDBServer.py
 
+  payment-authorization:
+    image: cl2545/banking-microservices
+    hostname: payment-authorization
+    ports:
+      - 19096:9090
+    restart: always
+    volumes:
+      - ./PaymentAuthorizationServer.py:/PaymentAuthorizationServer.py
+      - ./gen-py:/gen-py
+      - ./bank.thrift:/bank.thrift
+      - ./thrift_connector:/thrift_connector
+    entrypoint: python3 /PaymentAuthorizationServer.py
+
   payment-authorization-db:
     image: cl2545/banking-microservices
     hostname: payment-authorization-db
@@ -56,17 +73,6 @@ services:
       - ./gen-py:/gen-py
     entrypoint: python3 /PaymentAuthorizationDBServer.py
  
-  payment-authorization:
-    image: cl2545/banking-microservices
-    hostname: payment-authorization
-    ports:
-      - 19096:9090
-    restart: always
-    volumes:
-      - ./PaymentAuthorizationServer.py:/PaymentAuthorizationServer.py
-      - ./gen-py:/gen-py
-    entrypoint: python3 /PaymentAuthorizationServer.py
-  
   customer-information:
     image: cl2545/banking-microservices
     hostname: customer-information
@@ -76,6 +82,8 @@ services:
     volumes:
       - ./CustomerInformationServer.py:/CustomerInformationServer.py
       - ./gen-py:/gen-py
+      - ./bank.thrift:/bank.thrift
+      - ./thrift_connector:/thrift_connector
     entrypoint: python3 /CustomerInformationServer.py
  
   contact-information:
@@ -87,6 +95,8 @@ services:
     volumes:
       - ./ContactInformationServer.py:/ContactInformationServer.py
       - ./gen-py:/gen-py
+      - ./bank.thrift:/bank.thrift
+      - ./thrift_connector:/thrift_connector
     entrypoint: python3 /ContactInformationServer.py
  
   contact-information-db:
@@ -109,6 +119,8 @@ services:
     volumes:
       - ./RegisteredProductsServer.py:/RegisteredProductsServer.py
       - ./gen-py:/gen-py
+      - ./bank.thrift:/bank.thrift
+      - ./thrift_connector:/thrift_connector
     entrypoint: python3 /RegisteredProductsServer.py
  
   registered-products-db:
@@ -131,6 +143,8 @@ services:
     volumes:
       - ./OnlineBankingServer.py:/OnlineBankingServer.py
       - ./gen-py:/gen-py
+      - ./bank.thrift:/bank.thrift
+      - ./thrift_connector:/thrift_connector
     entrypoint: python3 /OnlineBankingServer.py
    
   account-information:
@@ -142,6 +156,8 @@ services:
     volumes:
       - ./AccountInformationServer.py:/AccountInformationServer.py
       - ./gen-py:/gen-py
+      - ./bank.thrift:/bank.thrift
+      - ./thrift_connector:/thrift_connector
     entrypoint: python3 /AccountInformationServer.py
   
   account-information-db:
@@ -164,6 +180,8 @@ services:
     volumes:
       - ./MoneyTransferServer.py:/MoneyTransferServer.py
       - ./gen-py:/gen-py
+      - ./bank.thrift:/bank.thrift
+      - ./thrift_connector:/thrift_connector
     entrypoint: python3 /MoneyTransferServer.py
   
   # DNS server for testing purposes: maps container names to addresses

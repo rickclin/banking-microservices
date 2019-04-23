@@ -4,12 +4,18 @@ import sys
 sys.path.append('gen-py')
 
 from thrift           import Thrift
-from bank             import TransactionHistory, TransactionHistoryDB 
-
+from bank             import TransactionHistory 
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
+
+import thriftpy2
+from thriftpy2.rpc              import make_client
+from thriftpy2.protocol.binary  import TBinaryProtocolFactory
+from thriftpy2.transport.framed import TFramedTransportFactory
+import thrift_connector.connection_pool as connection_pool
+bank_thrift = thriftpy2.load("bank.thrift", module_name="bank_thrift")
 
 import datetime
 import string
@@ -19,28 +25,21 @@ SERVER_PORT = ('0.0.0.0', 9090)
 class TransactionHistoryHandler:
     def __init__(self):
         self.log = {}
-
+        self.TransactionHistoryDBClient = connection_pool.ClientPool(
+          bank_thrift.TransactionHistoryDB,
+          'transaction-history-db', 9090,
+          connection_class=connection_pool.ThriftPyCyClient
+        )
+ 
     def ping(self):
         print('ping()')
     
-    def createConnection(self, container, server):
-        transport = TSocket.TSocket(container, 9090)
-        transport = TTransport.TFramedTransport(transport)
-        protocol = TBinaryProtocol.TBinaryProtocol(transport)
-        client = server.Client(protocol)
-        transport.open()
-        return client, transport
-
     def getTransactionLog(self, cardNumber):
-      clientTransactionDB, transportTransactionDB = self.createConnection('transaction-history-db', TransactionHistoryDB)
-      log = clientTransactionDB.getTransactionLog(cardNumber)
-      transportTransactionDB.close()
+      log = self.TransactionHistoryDBClient.getTransactionLog(cardNumber)
       return log
 
     def filterTransactions(self, cardNumber, numOfResults, dateRange, amountRange, entryMode, description):
-      clientTransactionDB, transportTransactionDB = self.createConnection('transaction-history-db', TransactionHistoryDB)
-      log = clientTransactionDB.getTransactionLog(cardNumber)
-      transportTransactionDB.close()
+      log = self.TransactionHistoryDBClient.getTransactionLog(cardNumber)
       output = []
       
       dateRange = dateRange.split(',')
@@ -68,9 +67,7 @@ class TransactionHistoryHandler:
       return output[:int(numOfResults)] if numOfResults > 0 else output
 
     def insertTransaction(self, cardNumber, amount, entryMode, description):
-      clientTransactionDB, transportTransactionDB = self.createConnection('transaction-history-db', TransactionHistoryDB)
-      ack = clientTransactionDB.insertTransaction(cardNumber, amount, entryMode, description)
-      transportTransactionDB.close()
+      ack = self.TransactionHistoryDBClient.insertTransaction(cardNumber, amount, entryMode, description)
       return ack
 
 

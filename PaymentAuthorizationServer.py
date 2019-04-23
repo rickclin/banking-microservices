@@ -14,35 +14,35 @@ from thrift.transport import TTransport
 from thrift.protocol  import TBinaryProtocol
 from thrift.server    import TServer
 
+import thriftpy2
+from thriftpy2.rpc              import make_client
+from thriftpy2.protocol.binary  import TBinaryProtocolFactory
+from thriftpy2.transport.framed import TFramedTransportFactory
+import thrift_connector.connection_pool as connection_pool
+bank_thrift = thriftpy2.load("bank.thrift", module_name="bank_thrift")
+
+
 SERVER_PORT = ('0.0.0.0', 9090)
 
 class PaymentAuthorizationHandler:
     def __init__(self):
         self.log = {}
+        self.PaymentAuthorizationDBClient = connection_pool.ClientPool(
+          bank_thrift.PaymentAuthorizationDB,
+          'payment-authorization-db', 9090,
+          connection_class=connection_pool.ThriftPyCyClient
+        )
 
     def ping(self):
         print('ping()')
 
-    def createConnection(self, container, server):
-      transport = TSocket.TSocket(container, 9090)
-      transport = TTransport.TFramedTransport(transport)
-      protocol = TBinaryProtocol.TBinaryProtocol(transport)
-      client = server.Client(protocol)
-      transport.open()
-      return client, transport
-
-
     def authorize(self, cardNumber, amount):
-      clientAuthRuleDB, protocolAuthRuleDB = self.createConnection('payment-authorization-db', PaymentAuthorizationDB)
-      limit = clientAuthRuleDB.getLimit(cardNumber)
-      protocolAuthRuleDB.close()
+      limit = self.PaymentAuthorizationDBClient.getLimit(cardNumber)
       if amount <= limit: return True
       else: return False
 
     def changeAuthRule(self, cardNumber, newAmount):
-      clientAuthRuleDB, protocolAuthRuleDB = self.createConnection('payment-authorization-db', PaymentAuthorizationDB)
-      ack = clientAuthRuleDB.changeLimit(cardNumber, newAmount)
-      protocolAuthRuleDB.close()
+      ack = self.PaymentAuthorizationDBClient.changeLimit(cardNumber, newAmount)
       return ack
 
 if __name__ == '__main__':
